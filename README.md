@@ -1,6 +1,6 @@
-# **Multistep Form with Conditional Navigation and Restricted Forward Navigation**
+# **Multistep Form with Conditional Navigation and Progress Bar**
 
-This README provides a comprehensive guide on how to implement and use the multistep form script with conditional logic and restricted forward navigation. The script allows you to create complex forms where steps can be shown or hidden based on user input, and users cannot skip required steps by clicking ahead in the navigation bar.
+This README provides a comprehensive guide on implementing a multistep form with conditional logic, restricted forward navigation, and a progress bar. The script allows for complex forms where steps can be shown or hidden based on user input, users cannot skip required steps by clicking ahead, and a progress bar visually indicates the user's progress through the form.
 
 ---
 
@@ -15,23 +15,26 @@ This README provides a comprehensive guide on how to implement and use the multi
 4. [Navigation Setup](#navigation-setup)
    - [Navigation Elements](#navigation-elements)
    - [Styling Navigation Steps](#styling-navigation-steps)
-5. [Conditional Steps](#conditional-steps)
+5. [Progress Bar Setup](#progress-bar-setup)
+   - [Progress Bar Elements](#progress-bar-elements)
+   - [Styling the Progress Bar](#styling-the-progress-bar)
+6. [Conditional Steps](#conditional-steps)
    - [Using `data-condition`](#using-data-condition)
    - [Supported Operators](#supported-operators)
    - [Examples](#examples)
-6. [Validation Handling](#validation-handling)
-7. [Accessibility Features](#accessibility-features)
-8. [API Methods](#api-methods)
-9. [Example Implementation](#example-implementation)
-10. [Best Practices](#best-practices)
-11. [Troubleshooting](#troubleshooting)
-12. [Conclusion](#conclusion)
+7. [Validation Handling](#validation-handling)
+8. [Accessibility Features](#accessibility-features)
+9. [API Methods](#api-methods)
+10. [Example Implementation](#example-implementation)
+11. [Best Practices](#best-practices)
+12. [Troubleshooting](#troubleshooting)
+13. [Conclusion](#conclusion)
 
 ---
 
 ## **1. Introduction**
 
-This multistep form script enhances a standard HTML form by splitting it into multiple steps, adding conditional logic, validation, and restricted navigation. Users can navigate through the form using "Next" and "Previous" buttons, and a navigation bar displays the steps. Forward navigation via the navigation bar is restricted to prevent users from skipping required steps.
+This multistep form script enhances a standard HTML form by splitting it into multiple steps, adding conditional logic, validation, restricted navigation, and a progress bar. Users can navigate through the form using "Next" and "Previous" buttons. A navigation bar displays the steps, and a progress bar provides visual feedback on the user's progress.
 
 ---
 
@@ -39,10 +42,11 @@ This multistep form script enhances a standard HTML form by splitting it into mu
 
 - **Conditional Steps**: Show or hide steps based on user inputs using `data-condition`.
 - **Restricted Forward Navigation**: Users cannot navigate to future steps via the navigation bar, preventing skipping required steps.
+- **Progress Bar**: Visually indicates the user's progress through the form.
 - **Validation**: Validates inputs in visible steps, blocking navigation if validation fails.
 - **Navigation History**: Tracks visited steps for proper back navigation.
 - **Accessibility**: Implements ARIA attributes and roles for better accessibility.
-- **Customizable Styling**: Add classes to style navigation steps (e.g., "is-active", "is-deactive").
+- **Customizable Styling**: Add classes to style navigation steps and progress bar.
 
 ---
 
@@ -91,7 +95,7 @@ Place the script at the end of your HTML file, just before the closing `</body>`
 
 ```html
 <script>
-  <!-- Paste the full script provided earlier here -->
+  <!-- Paste the full updated script provided in the "Updated Script" section here -->
 </script>
 ```
 
@@ -148,7 +152,65 @@ To display a navigation bar showing the steps, include:
 
 ---
 
-## **5. Conditional Steps**
+## **5. Progress Bar Setup**
+
+### **Progress Bar Elements**
+
+Include the progress bar elements in your HTML where you want the progress bar to appear.
+
+```html
+<!-- Progress Bar Wrapper -->
+<div ms-progress-wrap>
+  <!-- Progress Bar Fill -->
+  <div ms-progress-bar></div>
+</div>
+
+<!-- Step Indicators -->
+<p>
+  Step <span ms-current-step></span> of <span ms-total-steps></span>
+</p>
+```
+
+**Notes:**
+
+- Place these elements inside the `ms="wrapper"` container but outside the `<form>` if desired.
+- The elements with `ms-current-step` and `ms-total-steps` will display the current step number and total steps, respectively.
+
+### **Styling the Progress Bar**
+
+Add CSS to style the progress bar according to your design preferences.
+
+**Example CSS**:
+
+```css
+/* Progress Bar Wrapper */
+[ms-progress-wrap] {
+  width: 100%;
+  background-color: #e0e0e0;
+  height: 10px;
+  border-radius: 5px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+/* Progress Bar Fill */
+[ms-progress-bar] {
+  width: 0%;
+  height: 100%;
+  background-color: #3b82f6; /* Adjust color as needed */
+  transition: width 0.3s ease;
+}
+
+/* Step Indicators */
+[ms-current-step],
+[ms-total-steps] {
+  font-weight: bold;
+}
+```
+
+---
+
+## **6. Conditional Steps**
 
 ### **Using `data-condition`**
 
@@ -211,7 +273,7 @@ Add `data-condition` to steps to control their visibility based on input values.
 
 ---
 
-## **6. Validation Handling**
+## **7. Validation Handling**
 
 - **Visible Inputs**: Only inputs in the current visible step are validated.
 - **Required Fields**: Required attributes are managed dynamically to prevent validation of hidden fields.
@@ -219,14 +281,25 @@ Add `data-condition` to steps to control their visibility based on input values.
 
 ---
 
-## **7. Accessibility Features**
+## **8. Accessibility Features**
 
-- **ARIA Attributes**: Steps and navigation elements include appropriate ARIA roles and attributes.
+- **ARIA Attributes**: Steps, navigation elements, and progress bar include appropriate ARIA roles and attributes.
 - **Focus Management**: The first input in each step is focused when the step is displayed.
+
+**Example for Progress Bar:**
+
+```html
+<!-- Progress Bar with ARIA Roles -->
+<div ms-progress-wrap role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+  <div ms-progress-bar></div>
+</div>
+```
+
+Update `aria-valuenow` dynamically if needed (the script currently does not update this attribute).
 
 ---
 
-## **8. API Methods**
+## **9. API Methods**
 
 The script provides an API accessible via `window.multiStepFormAPI`.
 
@@ -239,11 +312,21 @@ The script provides an API accessible via `window.multiStepFormAPI`.
 
 ---
 
-## **9. Example Implementation**
+## **10. Example Implementation**
 
 ```html
 <!-- Wrapper -->
 <div ms="wrapper">
+  <!-- Progress Bar -->
+  <div ms-progress-wrap>
+    <div ms-progress-bar></div>
+  </div>
+
+  <!-- Step Indicators -->
+  <p>
+    Step <span ms-current-step></span> of <span ms-total-steps></span>
+  </p>
+
   <!-- Form -->
   <form>
     <!-- Step 1: Customer Type Selection -->
@@ -297,23 +380,24 @@ The script provides an API accessible via `window.multiStepFormAPI`.
 
 <!-- Include the script -->
 <script>
-  <!-- Paste the full updated script here -->
+  <!-- Paste the full updated script provided earlier here -->
 </script>
 ```
 
 ---
 
-## **10. Best Practices**
+## **11. Best Practices**
 
 - **Consistent Input Names**: Ensure the `name` attributes of inputs match those used in `data-condition`.
 - **Avoid Skipping Steps**: Use the script's navigation restrictions to prevent users from skipping required steps.
 - **Style Deactivated Steps**: Use the "is-deactive" class to visually indicate steps that are not yet accessible.
-- **Test Thoroughly**: Test your form with various inputs to ensure conditional logic and validation work as expected.
+- **Customize the Progress Bar**: Adjust the CSS to match your site's branding and layout.
+- **Test Thoroughly**: Test your form with various inputs to ensure conditional logic, validation, and progress bar updates work as expected.
 - **Accessibility Compliance**: Ensure your styles do not interfere with the ARIA attributes and roles.
 
 ---
 
-## **11. Troubleshooting**
+## **12. Troubleshooting**
 
 - **Steps Not Showing/Hiding Correctly**:
   - Verify `data-condition` syntax and input names.
@@ -327,11 +411,20 @@ The script provides an API accessible via `window.multiStepFormAPI`.
   - Check that required fields are correctly set and only on visible steps.
   - Make sure validation messages are displaying for the correct inputs.
 
+- **Progress Bar Not Updating**:
+  - Ensure the progress bar elements have the correct attributes (`ms-progress-wrap`, `ms-progress-bar`, `ms-current-step`, `ms-total-steps`).
+  - Verify that the CSS styles are correctly applied.
+
 - **Styles Not Applying**:
   - Verify that the classes `is-active` and `is-deactive` are correctly used in your CSS.
+  - Ensure that CSS selectors match the elements correctly.
 
 ---
 
-## **12. Conclusion**
+## **13. Conclusion**
 
-By following this guide, you can effectively implement a multistep form with conditional logic and restricted forward navigation. The script ensures users complete all required steps in order, enhancing data integrity and user experience.
+By following this guide, you can effectively implement a multistep form with conditional logic, restricted forward navigation, and a progress bar. The script ensures users complete all required steps in order and provides visual feedback on their progress, enhancing data integrity and user experience.
+
+---
+
+**If you need further assistance or have any questions, feel free to reach out!**

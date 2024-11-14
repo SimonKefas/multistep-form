@@ -5,9 +5,14 @@ document.addEventListener("DOMContentLoaded", function () {
     const nextButton = document.querySelector('[ms-nav="next"]');
     const navContainer = document.querySelector('[ms-nav-steps="container"]');
     const navStepTemplate = document.querySelector('[ms-nav-steps="step"]');
-    const navSeparatorTemplate = document.querySelector(
-      '[ms-nav-steps="divider"]'
-    );
+    const navSeparatorTemplate = document.querySelector('[ms-nav-steps="divider"]');
+
+    // Progress Bar Elements
+    const progressWrap = document.querySelector('[ms-progress-wrap]');
+    const progressBar = document.querySelector('[ms-progress-bar]');
+    const currentStepElement = document.querySelector('[ms-current-step]');
+    const totalStepsElement = document.querySelector('[ms-total-steps]');
+
     let currentStep = 0;
     let stepHistory = [];
     let steps = [];
@@ -15,15 +20,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (!form || !prevButton || !nextButton) {
       console.error(
-        "Required elements not found in the DOM. Please add the ms='wrapper', ms-nav='prev' & ms-nav='next' to relevant elements."
+        "Required elements not found in the DOM. Please add the ms='wrapper', ms-nav='prev', ms-nav='next' to relevant elements."
       );
       return;
     }
-
-    // Remove step dividers from the DOM
-    form
-      .querySelectorAll('[ms-step-divider="true"]')
-      .forEach((divider) => divider.remove());
 
     function filterSteps() {
       steps = Array.from(form.children).filter((step) => {
@@ -40,11 +40,7 @@ document.addEventListener("DOMContentLoaded", function () {
     filterSteps();
 
     function isVisible(element) {
-      return !!(
-        element.offsetWidth ||
-        element.offsetHeight ||
-        element.getClientRects().length
-      );
+      return !!(element.offsetWidth || element.offsetHeight || element.getClientRects().length);
     }
 
     function showStep(stepIndex) {
@@ -73,14 +69,13 @@ document.addEventListener("DOMContentLoaded", function () {
       currentStepElement.setAttribute("aria-hidden", "false");
       setTimeout(() => {
         currentStepElement.style.opacity = 1;
-        const firstInput = currentStepElement.querySelector(
-          "input, select, textarea"
-        );
+        const firstInput = currentStepElement.querySelector("input, select, textarea");
         if (firstInput) firstInput.focus();
       }, 100);
 
       updateNavSteps(filteredSteps, stepIndex);
       updateButtons(filteredSteps, stepIndex);
+      updateProgressBar(filteredSteps, stepIndex);
       updateRequiredAttributes(filteredSteps);
 
       currentStep = stepIndex; // Update currentStep to the new index
@@ -102,18 +97,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const stepClone = navStepTemplate.cloneNode(true);
         stepClone.removeAttribute("ms-nav-steps");
-        stepClone.textContent =
-          step.getAttribute("ms-step-name") || `Step ${index + 1}`;
+        stepClone.textContent = step.getAttribute("ms-step-name") || `Step ${index + 1}`;
 
         stepClone.classList.toggle("is-active", index === currentStepIndex);
         stepClone.classList.toggle("is-deactive", index > currentStepIndex);
 
         stepClone.setAttribute("aria-selected", index === currentStepIndex);
         stepClone.setAttribute("role", "tab");
-        stepClone.setAttribute(
-          "tabindex",
-          index === currentStepIndex ? "0" : "-1"
-        );
+        stepClone.setAttribute("tabindex", index === currentStepIndex ? "0" : "-1");
 
         if (index <= currentStepIndex) {
           // Only add click event listener to previous steps
@@ -146,6 +137,24 @@ document.addEventListener("DOMContentLoaded", function () {
       submitButtons.forEach((submitButton) => {
         submitButton.style.display = isLastStep ? "inline-block" : "none";
       });
+    }
+
+    function updateProgressBar(filteredSteps, stepIndex) {
+      const totalSteps = filteredSteps.length;
+      const currentStepNumber = stepIndex + 1;
+      const progressPercentage = ((currentStepNumber - 1) / (totalSteps - 1)) * 100;
+
+      if (progressBar) {
+        progressBar.style.width = progressPercentage + "%";
+      }
+
+      if (currentStepElement) {
+        currentStepElement.textContent = currentStepNumber;
+      }
+
+      if (totalStepsElement) {
+        totalStepsElement.textContent = totalSteps;
+      }
     }
 
     function validateStep(stepIndex) {
@@ -192,9 +201,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function evaluateCondition(condition) {
       // Enhanced condition evaluator
       // Supports operators: ==, !=, ===, !==, <, <=, >, >=
-      const conditionMatch = condition.match(
-        /(\w+)\s*(==|!=|===|!==|<=|>=|<|>)\s*'([^']*)'/
-      );
+      const conditionMatch = condition.match(/(\w+)\s*(==|!=|===|!==|<=|>=|<|>)\s*'([^']*)'/);
       if (conditionMatch) {
         const [, inputName, operator, value] = conditionMatch;
         let inputValue = null;
@@ -203,15 +210,13 @@ document.addEventListener("DOMContentLoaded", function () {
         const inputs = form.querySelectorAll(`[name="${inputName}"]`);
         if (inputs.length > 1) {
           // It's a group of radio buttons or checkboxes
-          const checkedInput = form.querySelector(
-            `[name="${inputName}"]:checked`
-          );
-          inputValue = checkedInput ? checkedInput.value : "";
+          const checkedInput = form.querySelector(`[name="${inputName}"]:checked`);
+          inputValue = checkedInput ? checkedInput.value : '';
         } else {
           const input = inputs[0];
           if (input) {
-            if (input.type === "checkbox") {
-              inputValue = input.checked ? input.value || "on" : "";
+            if (input.type === 'checkbox') {
+              inputValue = input.checked ? input.value || 'on' : '';
             } else {
               inputValue = input.value;
             }
@@ -224,8 +229,7 @@ document.addEventListener("DOMContentLoaded", function () {
           // Attempt to parse values as numbers for numeric comparisons
           const numericInputValue = parseFloat(inputValue);
           const numericCompareValue = parseFloat(compareValue);
-          const areNumeric =
-            !isNaN(numericInputValue) && !isNaN(numericCompareValue);
+          const areNumeric = !isNaN(numericInputValue) && !isNaN(numericCompareValue);
 
           switch (operator) {
             case "==":
@@ -237,21 +241,13 @@ document.addEventListener("DOMContentLoaded", function () {
             case "!==":
               return inputValue !== compareValue;
             case "<":
-              return areNumeric
-                ? numericInputValue < numericCompareValue
-                : false;
+              return areNumeric ? numericInputValue < numericCompareValue : false;
             case "<=":
-              return areNumeric
-                ? numericInputValue <= numericCompareValue
-                : false;
+              return areNumeric ? numericInputValue <= numericCompareValue : false;
             case ">":
-              return areNumeric
-                ? numericInputValue > numericCompareValue
-                : false;
+              return areNumeric ? numericInputValue > numericCompareValue : false;
             case ">=":
-              return areNumeric
-                ? numericInputValue >= numericCompareValue
-                : false;
+              return areNumeric ? numericInputValue >= numericCompareValue : false;
             default:
               return false;
           }
@@ -358,6 +354,7 @@ document.addEventListener("DOMContentLoaded", function () {
       } else {
         updateNavSteps(filteredSteps, currentStep);
         updateButtons(filteredSteps, currentStep);
+        updateProgressBar(filteredSteps, currentStep);
         updateRequiredAttributes(filteredSteps);
       }
     }, 100);
@@ -381,8 +378,10 @@ document.addEventListener("DOMContentLoaded", function () {
       setupConditionalListeners();
       form.addEventListener("submit", handleFormSubmit);
       showStep(0);
-      document.querySelector('[ms="wrapper"]').style.cssText =
-        "display: block; opacity: 1";
+      document.querySelector('[ms="wrapper"]').style.cssText = "display: block; opacity: 1";
+
+      // Initialize progress bar on load
+      updateProgressBar(filteredSteps, currentStep);
     })();
 
     window.multiStepFormAPI = {
@@ -407,6 +406,6 @@ document.addEventListener("DOMContentLoaded", function () {
       },
     };
 
-    console.log("MultiStep forms v2.0.1 initialized!");
+    console.log("MultiStep forms initialized with progress bar support!");
   })();
 });
