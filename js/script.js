@@ -443,6 +443,6 @@ document.addEventListener("DOMContentLoaded", function () {
       },
     };
 
-    console.log("MultiStep forms initialized with keyboard navigation and ms-step-divider support!");
+    console.log("MultiStep forms v2.0.5 initialized successfully!");
   })();
 });
