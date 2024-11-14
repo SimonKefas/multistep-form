@@ -1,17 +1,21 @@
 document.addEventListener("DOMContentLoaded", function () {
   (function () {
-    const form = document.querySelector('[ms="wrapper"] > form');
-    const prevButton = document.querySelector('[ms-nav="prev"]');
-    const nextButton = document.querySelector('[ms-nav="next"]');
-    const navContainer = document.querySelector('[ms-nav-steps="container"]');
-    const navStepTemplate = document.querySelector('[ms-nav-steps="step"]');
-    const navSeparatorTemplate = document.querySelector('[ms-nav-steps="divider"]');
+    const wrapper = document.querySelector('[ms="wrapper"]');
+    const form = wrapper.querySelector('form');
+    const prevButton = wrapper.querySelector('[ms-nav="prev"]');
+    const nextButton = wrapper.querySelector('[ms-nav="next"]');
+    const navContainer = wrapper.querySelector('[ms-nav-steps="container"]');
+    const navStepTemplate = wrapper.querySelector('[ms-nav-steps="step"]');
+    const navSeparatorTemplate = wrapper.querySelector('[ms-nav-steps="divider"]');
 
     // Progress Bar Elements
-    const progressWrap = document.querySelector('[ms-progress-wrap]');
-    const progressBar = document.querySelector('[ms-progress-bar]');
-    const currentStepElement = document.querySelector('[ms-current-step]');
-    const totalStepsElement = document.querySelector('[ms-total-steps]');
+    const progressWrap = wrapper.querySelector('[ms-progress-wrap]');
+    const progressBar = wrapper.querySelector('[ms-progress-bar]');
+    const currentStepElement = wrapper.querySelector('[ms-current-step]');
+    const totalStepsElement = wrapper.querySelector('[ms-total-steps]');
+
+    // Key Navigation Option
+    const keyNavigationEnabled = wrapper.getAttribute('ms-key-navigation') === 'true';
 
     let currentStep = 0;
     let stepHistory = [];
@@ -25,14 +29,12 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
 
+    // Remove step dividers from the DOM
+    form.querySelectorAll('[ms-step-divider="true"]').forEach((divider) => divider.remove());
+
     function filterSteps() {
       steps = Array.from(form.children).filter((step) => {
-        return (
-          !step.hasAttribute("ms-step-divider") &&
-          !step.querySelector(
-            '[class*="recaptcha"], [class*="h-captcha"], [class*="turnstile"], [class*="captcha"]'
-          )
-        );
+        return !step.hasAttribute("ms-step-divider");
       });
       filteredSteps = getFilteredSteps();
     }
@@ -64,12 +66,12 @@ document.addEventListener("DOMContentLoaded", function () {
         stepIndex = 0;
       }
 
-      const currentStepElement = filteredSteps[stepIndex];
-      currentStepElement.style.display = "block";
-      currentStepElement.setAttribute("aria-hidden", "false");
+      const currentStepElementNode = filteredSteps[stepIndex];
+      currentStepElementNode.style.display = "block";
+      currentStepElementNode.setAttribute("aria-hidden", "false");
       setTimeout(() => {
-        currentStepElement.style.opacity = 1;
-        const firstInput = currentStepElement.querySelector("input, select, textarea");
+        currentStepElementNode.style.opacity = 1;
+        const firstInput = currentStepElementNode.querySelector("input, select, textarea");
         if (firstInput) firstInput.focus();
       }, 100);
 
@@ -201,7 +203,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function evaluateCondition(condition) {
       // Enhanced condition evaluator
       // Supports operators: ==, !=, ===, !==, <, <=, >, >=
-      const conditionMatch = condition.match(/(\w+)\s*(==|!=|===|!==|<=|>=|<|>)\s*'([^']*)'/);
+      const conditionMatch = condition.match(/([\w\-]+)\s*(==|!=|===|!==|<=|>=|<|>)\s*'([^']*)'/);
       if (conditionMatch) {
         const [, inputName, operator, value] = conditionMatch;
         let inputValue = null;
@@ -296,6 +298,10 @@ document.addEventListener("DOMContentLoaded", function () {
     function setupNavigationListeners() {
       prevButton.addEventListener("click", handlePrevClick);
       nextButton.addEventListener("click", handleNextClick);
+
+      if (keyNavigationEnabled) {
+        form.addEventListener("keydown", handleKeyNavigation);
+      }
     }
 
     function handleFormSubmit(event) {
@@ -373,12 +379,27 @@ document.addEventListener("DOMContentLoaded", function () {
       });
     }
 
+    function handleKeyNavigation(event) {
+      const isEnterKey = event.key === "Enter";
+      const isCtrlOrCmdPressed = event.ctrlKey || event.metaKey;
+
+      if (isEnterKey && !isCtrlOrCmdPressed) {
+        event.preventDefault();
+        handleNextClick();
+      } else if (isEnterKey && isCtrlOrCmdPressed) {
+        event.preventDefault();
+        if (currentStep === filteredSteps.length - 1) {
+          form.submit();
+        }
+      }
+    }
+
     (function initializeMultiStepForm() {
       setupNavigationListeners();
       setupConditionalListeners();
       form.addEventListener("submit", handleFormSubmit);
       showStep(0);
-      document.querySelector('[ms="wrapper"]').style.cssText = "display: block; opacity: 1";
+      wrapper.style.cssText = "display: block; opacity: 1";
 
       // Initialize progress bar on load
       updateProgressBar(filteredSteps, currentStep);
@@ -406,6 +427,6 @@ document.addEventListener("DOMContentLoaded", function () {
       },
     };
 
-    console.log("MultiStep forms initialized with progress bar support!");
+    console.log("MultiStep forms initialized with updated features!");
   })();
 });

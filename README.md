@@ -1,6 +1,6 @@
-# **Multistep Form with Conditional Navigation and Progress Bar**
+# **Multistep Form with Conditional Navigation, Progress Bar, and Enhanced Features**
 
-This README provides a comprehensive guide on implementing a multistep form with conditional logic, restricted forward navigation, and a progress bar. The script allows for complex forms where steps can be shown or hidden based on user input, users cannot skip required steps by clicking ahead, and a progress bar visually indicates the user's progress through the form.
+This README provides a comprehensive guide on implementing a multistep form with conditional logic, restricted forward navigation, a progress bar, and additional features like keyboard navigation and support for Webflow's editing environment. The script allows for complex forms where steps can be shown or hidden based on user input, users cannot skip required steps by clicking ahead, and a progress bar visually indicates the user's progress through the form.
 
 ---
 
@@ -23,18 +23,22 @@ This README provides a comprehensive guide on implementing a multistep form with
    - [Supported Operators](#supported-operators)
    - [Examples](#examples)
 7. [Validation Handling](#validation-handling)
-8. [Accessibility Features](#accessibility-features)
-9. [API Methods](#api-methods)
-10. [Example Implementation](#example-implementation)
-11. [Best Practices](#best-practices)
-12. [Troubleshooting](#troubleshooting)
-13. [Conclusion](#conclusion)
+8. [Keyboard Navigation](#keyboard-navigation)
+   - [Enabling Enter Key Navigation](#enabling-enter-key-navigation)
+   - [Usage Notes](#usage-notes)
+9. [Webflow Editing Support](#webflow-editing-support)
+10. [Accessibility Features](#accessibility-features)
+11. [API Methods](#api-methods)
+12. [Example Implementation](#example-implementation)
+13. [Best Practices](#best-practices)
+14. [Troubleshooting](#troubleshooting)
+15. [Conclusion](#conclusion)
 
 ---
 
 ## **1. Introduction**
 
-This multistep form script enhances a standard HTML form by splitting it into multiple steps, adding conditional logic, validation, restricted navigation, and a progress bar. Users can navigate through the form using "Next" and "Previous" buttons. A navigation bar displays the steps, and a progress bar provides visual feedback on the user's progress.
+This multistep form script enhances a standard HTML form by splitting it into multiple steps, adding conditional logic, validation, restricted navigation, a progress bar, and keyboard navigation. Users can navigate through the form using "Next" and "Previous" buttons. A navigation bar displays the steps, and a progress bar provides visual feedback on the user's progress.
 
 ---
 
@@ -44,6 +48,8 @@ This multistep form script enhances a standard HTML form by splitting it into mu
 - **Restricted Forward Navigation**: Users cannot navigate to future steps via the navigation bar, preventing skipping required steps.
 - **Progress Bar**: Visually indicates the user's progress through the form.
 - **Validation**: Validates inputs in visible steps, blocking navigation if validation fails.
+- **Keyboard Navigation**: Optionally enable Enter key to proceed to the next step and Ctrl/Cmd + Enter to submit.
+- **Webflow Editing Support**: Includes step dividers (`ms-step-divider`) for better visibility in Webflow's editor.
 - **Navigation History**: Tracks visited steps for proper back navigation.
 - **Accessibility**: Implements ARIA attributes and roles for better accessibility.
 - **Customizable Styling**: Add classes to style navigation steps and progress bar.
@@ -64,13 +70,14 @@ This multistep form script enhances a standard HTML form by splitting it into mu
   </div>
   ```
 
-- **Steps**: Each step is a direct child `<div>` of the `<form>`.
+- **Steps**: Each step is a direct child `<div>` of the `<form>`. Optionally, include `ms-step-divider` elements for better visibility in editors like Webflow (these will be automatically removed on the live site).
 
   ```html
   <form>
     <div ms-step-name="Step 1">
       <!-- Content for Step 1 -->
     </div>
+    <div ms-step-divider></div>
     <div ms-step-name="Step 2">
       <!-- Content for Step 2 -->
     </div>
@@ -91,12 +98,10 @@ This multistep form script enhances a standard HTML form by splitting it into mu
 
 ### **Including the Script**
 
-Place the script at the end of your HTML file, just before the closing `</body>` tag.
+Include the script in your HTML file, preferably just before the closing `</body>` tag. Use the following script tag to include the latest version from GitHub:
 
 ```html
-<script>
-  <!-- Paste the full updated script provided in the "Updated Script" section here -->
-</script>
+<script src="https://cdn.jsdelivr.net/gh/SimonKefas/multistep-form@latest/js/script.js"></script>
 ```
 
 ---
@@ -161,7 +166,6 @@ Include the progress bar elements in your HTML where you want the progress bar t
 ```html
 <!-- Progress Bar Wrapper -->
 <div ms-progress-wrap>
-  <!-- Progress Bar Fill -->
   <div ms-progress-bar></div>
 </div>
 
@@ -281,7 +285,53 @@ Add `data-condition` to steps to control their visibility based on input values.
 
 ---
 
-## **8. Accessibility Features**
+## **8. Keyboard Navigation**
+
+### **Enabling Enter Key Navigation**
+
+You can enable keyboard navigation to allow users to:
+
+- Press **Enter** to proceed to the next step.
+- Press **Ctrl/Cmd + Enter** to submit the form on the last step.
+
+**To enable this feature**, add the attribute `ms-keyboard-nav` to your form wrapper:
+
+```html
+<div ms="wrapper" ms-keyboard-nav>
+  <!-- Your form and other elements -->
+</div>
+```
+
+### **Usage Notes**
+
+- **Enter Key**: On input fields, pressing Enter will trigger the same action as clicking the "Next" button.
+- **Ctrl/Cmd + Enter**: On the last step, pressing Ctrl (Windows/Linux) or Cmd (Mac) along with Enter will submit the form.
+- **Preventing Default Behavior**: The script prevents the default form submission on Enter when this feature is enabled.
+
+---
+
+## **9. Webflow Editing Support**
+
+To improve the editing experience in Webflow or similar web editors, you can include step dividers. These are elements with the attribute `ms-step-divider`. They help visually separate steps in the editor.
+
+```html
+<form>
+  <div ms-step-name="Step 1">
+    <!-- Content for Step 1 -->
+  </div>
+  <div ms-step-divider></div>
+  <div ms-step-name="Step 2">
+    <!-- Content for Step 2 -->
+  </div>
+  <!-- Additional steps -->
+</form>
+```
+
+**Note**: These divider elements will be automatically removed by the script on the live site, ensuring they do not interfere with the form's functionality.
+
+---
+
+## **10. Accessibility Features**
 
 - **ARIA Attributes**: Steps, navigation elements, and progress bar include appropriate ARIA roles and attributes.
 - **Focus Management**: The first input in each step is focused when the step is displayed.
@@ -299,7 +349,7 @@ Update `aria-valuenow` dynamically if needed (the script currently does not upda
 
 ---
 
-## **9. API Methods**
+## **11. API Methods**
 
 The script provides an API accessible via `window.multiStepFormAPI`.
 
@@ -312,11 +362,11 @@ The script provides an API accessible via `window.multiStepFormAPI`.
 
 ---
 
-## **10. Example Implementation**
+## **12. Example Implementation**
 
 ```html
 <!-- Wrapper -->
-<div ms="wrapper">
+<div ms="wrapper" ms-keyboard-nav>
   <!-- Progress Bar -->
   <div ms-progress-wrap>
     <div ms-progress-bar></div>
@@ -341,21 +391,25 @@ The script provides an API accessible via `window.multiStepFormAPI`.
         Company
       </label>
     </div>
+    <div ms-step-divider></div>
 
     <!-- Step 2: Product Selection -->
     <div ms-step-name="Product Selection">
       <!-- Product selection fields -->
     </div>
+    <div ms-step-divider></div>
 
     <!-- Step 3: Company Information (Conditional) -->
     <div data-condition="customer == 'company'" ms-step-name="Company Information">
       <!-- Fields for company information -->
     </div>
+    <div ms-step-divider></div>
 
     <!-- Step 4: Private Information (Conditional) -->
     <div data-condition="customer == 'private'" ms-step-name="Private Information">
       <!-- Fields for private customer information -->
     </div>
+    <div ms-step-divider></div>
 
     <!-- Step 5: Confirmation -->
     <div ms-step-name="Confirmation">
@@ -379,25 +433,24 @@ The script provides an API accessible via `window.multiStepFormAPI`.
 </div>
 
 <!-- Include the script -->
-<script>
-  <!-- Paste the full updated script provided earlier here -->
-</script>
+<script src="https://cdn.jsdelivr.net/gh/SimonKefas/multistep-form@latest/js/script.js"></script>
 ```
 
 ---
 
-## **11. Best Practices**
+## **13. Best Practices**
 
 - **Consistent Input Names**: Ensure the `name` attributes of inputs match those used in `data-condition`.
 - **Avoid Skipping Steps**: Use the script's navigation restrictions to prevent users from skipping required steps.
 - **Style Deactivated Steps**: Use the "is-deactive" class to visually indicate steps that are not yet accessible.
 - **Customize the Progress Bar**: Adjust the CSS to match your site's branding and layout.
-- **Test Thoroughly**: Test your form with various inputs to ensure conditional logic, validation, and progress bar updates work as expected.
+- **Test Thoroughly**: Test your form with various inputs to ensure conditional logic, validation, progress bar updates, and keyboard navigation work as expected.
+- **Webflow Editing**: Use `ms-step-divider` elements to improve the editing experience in Webflow; these will not affect the live site.
 - **Accessibility Compliance**: Ensure your styles do not interfere with the ARIA attributes and roles.
 
 ---
 
-## **12. Troubleshooting**
+## **14. Troubleshooting**
 
 - **Steps Not Showing/Hiding Correctly**:
   - Verify `data-condition` syntax and input names.
@@ -415,15 +468,19 @@ The script provides an API accessible via `window.multiStepFormAPI`.
   - Ensure the progress bar elements have the correct attributes (`ms-progress-wrap`, `ms-progress-bar`, `ms-current-step`, `ms-total-steps`).
   - Verify that the CSS styles are correctly applied.
 
+- **Keyboard Navigation Not Working**:
+  - Confirm that the `ms-keyboard-nav` attribute is added to the wrapper element.
+  - Ensure the script is up to date and correctly included.
+
 - **Styles Not Applying**:
   - Verify that the classes `is-active` and `is-deactive` are correctly used in your CSS.
   - Ensure that CSS selectors match the elements correctly.
 
 ---
 
-## **13. Conclusion**
+## **15. Conclusion**
 
-By following this guide, you can effectively implement a multistep form with conditional logic, restricted forward navigation, and a progress bar. The script ensures users complete all required steps in order and provides visual feedback on their progress, enhancing data integrity and user experience.
+By following this guide, you can effectively implement a multistep form with conditional logic, restricted forward navigation, a progress bar, keyboard navigation, and support for web editors like Webflow. The script ensures users complete all required steps in order, provides visual feedback on their progress, and enhances the overall user experience.
 
 ---
 
