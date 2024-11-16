@@ -479,6 +479,6 @@ document.addEventListener("DOMContentLoaded", function () {
       },
     };
 
-    console.log("MultiStep forms initialized with success message support!");
+    console.log("MultiStep forms v2.0.6 initialized!");
   })();
 });
