@@ -16,9 +16,6 @@ document.addEventListener("DOMContentLoaded", function () {
     // Keyboard Navigation Option
     const keyboardNavEnabled = form.hasAttribute('ms-keyboard-nav');
 
-    // Success Message Element
-    const successMessage = document.querySelector('[ms-success]');
-
     let currentStep = 0;
     let stepHistory = [];
     let steps = [];
@@ -312,12 +309,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function handleFormSubmit(event) {
-      event.preventDefault(); // Prevent default form submission
-
-      // Hide Next and Previous buttons immediately upon submission
-      prevButton.style.display = 'none';
-      nextButton.style.display = 'none';
-
       filterSteps(); // Ensure filteredSteps is updated
       const hiddenRequiredInputs = form.querySelectorAll(
         "input[required], select[required], textarea[required]"
@@ -330,9 +321,7 @@ document.addEventListener("DOMContentLoaded", function () {
       });
 
       if (!validateAllVisibleSteps()) {
-        // Show Next and Previous buttons again if validation fails
-        updateButtons(filteredSteps, currentStep);
-
+        event.preventDefault();
         for (let i = 0; i < filteredSteps.length; i++) {
           if (!validateStep(i)) {
             showStep(i);
@@ -348,41 +337,12 @@ document.addEventListener("DOMContentLoaded", function () {
           }
         });
       } else {
-        // Collect form data
-        const formData = new FormData(form);
-
-        // Submit the form via AJAX
-        fetch(form.action, {
-          method: form.method || 'POST',
-          body: formData,
-        })
-          .then((response) => {
-            if (response.ok) {
-              // Submission successful
-              form.style.display = 'none'; // Hide the form
-              if (navContainer) navContainer.style.display = 'none';
-              if (progressWrap) progressWrap.style.display = 'none';
-              if (successMessage) successMessage.style.display = 'block';
-            } else {
-              // Handle server errors
-              console.error('Form submission failed:', response.statusText);
-              // Show Next and Previous buttons again
-              updateButtons(filteredSteps, currentStep);
-            }
-          })
-          .catch((error) => {
-            console.error('Form submission error:', error);
-            // Show Next and Previous buttons again
-            updateButtons(filteredSteps, currentStep);
-          })
-          .finally(() => {
-            hiddenRequiredInputs.forEach((input) => {
-              if (input.dataset.originalRequired) {
-                input.setAttribute("required", "true");
-                delete input.dataset.originalRequired;
-              }
-            });
-          });
+        // Hide navigation elements upon submission
+        prevButton.style.display = 'none';
+        nextButton.style.display = 'none';
+        if (navContainer) navContainer.style.display = 'none';
+        if (progressWrap) progressWrap.style.display = 'none';
+        // Allow form submission to proceed
       }
     }
 
@@ -434,7 +394,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (event.ctrlKey || event.metaKey) {
           // Ctrl+Enter or Cmd+Enter to submit
           if (currentStep === filteredSteps.length - 1) {
-            handleFormSubmit(new Event('submit'));
+            form.submit();
           }
         } else {
           // Enter to go to next step
@@ -459,11 +419,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
       // Initialize progress bar on load
       updateProgressBar(filteredSteps, currentStep);
-
-      // Hide the success message initially
-      if (successMessage) {
-        successMessage.style.display = 'none';
-      }
     })();
 
     window.multiStepFormAPI = {
@@ -488,6 +443,6 @@ document.addEventListener("DOMContentLoaded", function () {
       },
     };
 
-    console.log("MultiStep forms v2.0.7 initialized!");
+    console.log("MultiStep forms v2.0.8 initialized!");
   })();
 });
