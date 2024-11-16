@@ -15,6 +15,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Keyboard Navigation Option
     const keyboardNavEnabled = form.hasAttribute('ms-keyboard-nav');
+    const nextKeyCombo = form.getAttribute('data-next-key') || 'Shift+Enter';
+    const prevKeyCombo = form.getAttribute('data-prev-key') || 'Alt+Enter';
 
     let currentStep = 0;
     let stepHistory = [];
@@ -189,15 +191,6 @@ document.addEventListener("DOMContentLoaded", function () {
       return true;
     }
 
-    function findFirstInvalidStep(targetStepIndex) {
-      for (let i = 0; i <= targetStepIndex; i++) {
-        if (!validateStep(i)) {
-          return i;
-        }
-      }
-      return null;
-    }
-
     function getFilteredSteps() {
       return steps.filter((step) => {
         const condition = step.getAttribute("data-condition");
@@ -346,59 +339,48 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     }
 
-    function debounce(func, wait) {
-      let timeout;
-      return function (...args) {
-        clearTimeout(timeout);
-        timeout = setTimeout(() => func.apply(this, args), wait);
+    function parseKeyCombo(combo) {
+      const keys = combo.toLowerCase().split('+');
+      return {
+        ctrlKey: keys.includes('ctrl'),
+        altKey: keys.includes('alt'),
+        shiftKey: keys.includes('shift'),
+        metaKey: keys.includes('meta'),
+        key: keys.find((k) => !['ctrl', 'alt', 'shift', 'meta'].includes(k)),
       };
     }
 
-    const debouncedFilterSteps = debounce(() => {
-      filterSteps();
-      if (!filteredSteps.includes(steps[currentStep])) {
-        if (currentStep >= filteredSteps.length) {
-          currentStep = filteredSteps.length - 1;
-        }
-        showStep(currentStep);
-      } else {
-        updateNavSteps(filteredSteps, currentStep);
-        updateButtons(filteredSteps, currentStep);
-        updateProgressBar(filteredSteps, currentStep);
-        updateRequiredAttributes(filteredSteps);
-      }
-    }, 100);
-
-    const observer = new MutationObserver(debouncedFilterSteps);
-
-    observer.observe(form, {
-      childList: true,
-      subtree: true,
-    });
-
-    function setupConditionalListeners() {
-      const allInputs = form.querySelectorAll("input, select, textarea");
-      allInputs.forEach((input) => {
-        input.addEventListener("change", debouncedFilterSteps);
-      });
+    function matchKeyEvent(event, combo) {
+      const parsedCombo = parseKeyCombo(combo);
+      return (
+        event.ctrlKey === parsedCombo.ctrlKey &&
+        event.altKey === parsedCombo.altKey &&
+        event.shiftKey === parsedCombo.shiftKey &&
+        event.metaKey === parsedCombo.metaKey &&
+        event.key.toLowerCase() === parsedCombo.key
+      );
     }
 
     function handleKeyDown(event) {
       if (!keyboardNavEnabled) return;
 
-      const activeElement = document.activeElement;
-      if (activeElement && activeElement.tagName === "TEXTAREA") return; // Ignore in textareas
+      if (event.target.tagName === "TEXTAREA") return; // Ignore in textareas
 
-      if (event.key === "Enter") {
+      // Prevent default Enter key behavior
+      if (event.key === 'Enter') {
         event.preventDefault();
-        if (event.ctrlKey || event.metaKey) {
-          // Ctrl+Enter or Cmd+Enter to submit
-          if (currentStep === filteredSteps.length - 1) {
-            form.submit();
-          }
-        } else {
-          // Enter to go to next step
-          handleNextClick();
+      }
+
+      if (matchKeyEvent(event, nextKeyCombo)) {
+        event.preventDefault();
+        handleNextClick();
+      } else if (matchKeyEvent(event, prevKeyCombo)) {
+        event.preventDefault();
+        handlePrevClick();
+      } else if (event.key === 'Enter') {
+        // Only allow form submission on the last step
+        if (currentStep === filteredSteps.length - 1 && validateStep(currentStep)) {
+          form.submit();
         }
       }
     }
@@ -443,6 +425,6 @@ document.addEventListener("DOMContentLoaded", function () {
       },
     };
 
-    console.log("MultiStep forms v2.0.8 initialized!");
+    console.log("MultiStep forms v2.0.9 initialized!");
   })();
 });

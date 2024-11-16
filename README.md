@@ -1,6 +1,6 @@
-# **Multistep Form with Conditional Logic, Validation, and Progress Indicators**
+# **Multistep Form with Conditional Logic, Validation, and Custom Keyboard Navigation**
 
-This guide provides straightforward instructions to implement a multistep form with conditional steps, validation, keyboard navigation, and progress indicators. The script enhances user experience by guiding them through the form step-by-step, ensuring data integrity, and providing visual progress feedback.
+This guide provides straightforward instructions to implement a multistep form with conditional steps, validation, custom keyboard navigation, and progress indicators. The script enhances user experience by guiding them through the form step-by-step, ensuring data integrity, and providing visual progress feedback.
 
 ---
 
@@ -9,7 +9,7 @@ This guide provides straightforward instructions to implement a multistep form w
 - **Multistep Navigation**: Break down long forms into manageable steps.
 - **Conditional Logic**: Show or hide steps based on user input.
 - **Form Validation**: Validate inputs at each step before proceeding.
-- **Keyboard Navigation**: Optional support for navigating with the Enter key.
+- **Custom Keyboard Navigation**: Navigate using customizable key combinations.
 - **Progress Bar**: Visual indicator of form completion.
 - **Accessible**: ARIA roles and attributes for better accessibility.
 - **Easy Integration**: Simple HTML attributes to enable features.
@@ -48,6 +48,8 @@ Use a standard `<form>` element. Add `ms-keyboard-nav` if you want keyboard navi
   <!-- Steps go here -->
 </form>
 ```
+
+**Note**: By default, keyboard navigation uses **Shift+Enter** to go to the next step and **Alt+Enter** to go to the previous step.
 
 #### **Form Steps**
 
@@ -125,18 +127,48 @@ Use your platform's built-in success message (e.g., Webflow's success message). 
 
 ---
 
-## **Keyboard Navigation**
+## **Custom Keyboard Navigation**
 
-Enable keyboard navigation by adding `ms-keyboard-nav` to the `<form>`:
+### **Enabling Keyboard Navigation**
+
+Add the `ms-keyboard-nav` attribute to your `<form>` element to enable keyboard navigation. You can also customize the key combinations for navigation using `data-next-key` and `data-prev-key`.
 
 ```html
-<form ms-keyboard-nav>
+<form ms-keyboard-nav data-next-key="Shift+Enter" data-prev-key="Alt+Enter">
   <!-- Form steps -->
 </form>
 ```
 
-- **Enter Key**: Proceed to the next step.
-- **Ctrl+Enter** or **Cmd+Enter**: Submit the form on the last step.
+- **Default Key Combinations**:
+  - **Next Step**: **Shift+Enter**
+  - **Previous Step**: **Alt+Enter**
+
+### **Usage**
+
+- **Proceed to Next Step**: Press **Shift+Enter**.
+- **Go to Previous Step**: Press **Alt+Enter**.
+- **Submit the Form**: Press **Enter** on the last step (after all validations pass).
+
+### **Customizing Key Combinations**
+
+You can customize the key combinations by setting `data-next-key` and `data-prev-key` attributes on the `<form>` element.
+
+- **Example**:
+
+  ```html
+  <form ms-keyboard-nav data-next-key="Ctrl+ArrowRight" data-prev-key="Ctrl+ArrowLeft">
+    <!-- Form steps -->
+  </form>
+  ```
+
+  - **Next Step**: **Ctrl+ArrowRight**
+  - **Previous Step**: **Ctrl+ArrowLeft**
+
+### **Notes**
+
+- **Preventing Default Submission**: The script prevents the default form submission when **Enter** is pressed, except when on the last step and all validations pass.
+- **Textarea Inputs**: The script allows normal behavior in `<textarea>` fields, so users can press **Enter** to create new lines.
+- **Accessibility Considerations**: Ensure that your chosen key combinations do not conflict with screen readers or other assistive technologies.
 
 ---
 
@@ -193,7 +225,7 @@ If using navigation steps, style the active and deactivated steps:
   <p>Step <span ms-current-step></span> of <span ms-total-steps></span></p>
 
   <!-- Form -->
-  <form ms-keyboard-nav action="/submit-form" method="POST">
+  <form ms-keyboard-nav data-next-key="Shift+Enter" data-prev-key="Alt+Enter" action="/submit-form" method="POST">
     <!-- Step 1 -->
     <div ms-step-name="Customer Type">
       <label>
@@ -235,6 +267,8 @@ If using navigation steps, style the active and deactivated steps:
 
 - **Validation**: The script validates inputs in the current step before allowing navigation.
 - **Conditional Logic**: Steps with `data-condition` attributes are shown or hidden based on user input.
+- **Preventing Premature Submission**: The default Enter key behavior is managed to prevent unintended form submissions.
+- **Custom Keyboard Navigation**: Use customizable key combinations for next and previous step navigation.
 - **Accessibility**: The script includes ARIA roles and manages focus for better accessibility.
 - **No AJAX Submission**: The form submits naturally, ensuring compatibility with platforms like Webflow.
 
@@ -246,15 +280,17 @@ If using navigation steps, style the active and deactivated steps:
 - **Required Fields**: Use the `required` attribute for mandatory fields.
 - **Testing**: Test the form thoroughly to ensure all steps and validations work as expected.
 - **Customization**: Feel free to style the form and progress indicators to match your branding.
+- **Accessibility**: Choose keyboard shortcuts that do not interfere with assistive technologies.
 
 ---
 
 ## **Troubleshooting**
 
-- **Form Not Submitting**: Ensure all required fields are filled and valid.
+- **Form Not Submitting**: Ensure all required fields are filled and valid. Remember that pressing **Enter** will only submit the form on the last step.
 - **Steps Not Showing/Hiding**: Check `data-condition` syntax and input values.
-- **Keyboard Navigation Not Working**: Ensure `ms-keyboard-nav` is added to the `<form>`.
+- **Keyboard Navigation Not Working**: Ensure `ms-keyboard-nav` is added to the `<form>` and that key combinations are correctly specified.
 - **Progress Bar Not Updating**: Verify that `[ms-progress-wrap]` and `[ms-progress-bar]` are correctly included.
+- **Default Enter Key Behavior**: The script prevents default form submission when **Enter** is pressed. If you need to allow submissions via Enter key in specific cases, adjust the script accordingly.
 
 ---
 
@@ -267,3 +303,9 @@ If using navigation steps, style the active and deactivated steps:
 ---
 
 Thank you for choosing this multistep form solution to enhance your forms. Happy coding!
+
+---
+
+**Note**: Always ensure that any custom key combinations used do not conflict with browser shortcuts or accessibility features. It's important to test your form with various assistive technologies to ensure it remains accessible to all users.
+
+---
