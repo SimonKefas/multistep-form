@@ -1,6 +1,6 @@
-# **Multistep Form with Conditional Navigation, Keyboard Support, and Progress Bar**
+# **Multistep Form with Conditional Navigation, Success Message, and Progress Bar**
 
-This README provides a comprehensive guide on implementing a multistep form with conditional logic, restricted forward navigation, keyboard support, and a progress bar. The script allows for complex forms where steps can be shown or hidden based on user input, users cannot skip required steps by clicking ahead, and a progress bar visually indicates the user's progress through the form.
+This README provides a comprehensive guide on implementing a multistep form with conditional logic, restricted forward navigation, keyboard support, a progress bar, and a custom success message. The script allows for complex forms where steps can be shown or hidden based on user input, users cannot skip required steps by clicking ahead, and a progress bar visually indicates the user's progress through the form.
 
 ---
 
@@ -25,19 +25,22 @@ This README provides a comprehensive guide on implementing a multistep form with
 7. [Keyboard Navigation](#keyboard-navigation)
    - [Enabling Keyboard Navigation](#enabling-keyboard-navigation)
    - [Usage](#usage)
-8. [Validation Handling](#validation-handling)
-9. [Accessibility Features](#accessibility-features)
-10. [API Methods](#api-methods)
-11. [Example Implementation](#example-implementation)
-12. [Best Practices](#best-practices)
-13. [Troubleshooting](#troubleshooting)
-14. [Conclusion](#conclusion)
+8. [Success Message Handling](#success-message-handling)
+   - [Displaying a Custom Success Message](#displaying-a-custom-success-message)
+   - [How It Works](#how-it-works)
+9. [Validation Handling](#validation-handling)
+10. [Accessibility Features](#accessibility-features)
+11. [API Methods](#api-methods)
+12. [Example Implementation](#example-implementation)
+13. [Best Practices](#best-practices)
+14. [Troubleshooting](#troubleshooting)
+15. [Conclusion](#conclusion)
 
 ---
 
 ## **1. Introduction**
 
-This multistep form script enhances a standard HTML form by splitting it into multiple steps, adding conditional logic, validation, restricted navigation, keyboard support, and a progress bar. Users can navigate through the form using "Next" and "Previous" buttons. A navigation bar displays the steps, and a progress bar provides visual feedback on the user's progress.
+This multistep form script enhances a standard HTML form by splitting it into multiple steps, adding conditional logic, validation, restricted navigation, keyboard support, a progress bar, and a custom success message. Users can navigate through the form using "Next" and "Previous" buttons. A navigation bar displays the steps, and a progress bar provides visual feedback on the user's progress. Upon successful submission, the form hides, and a custom success message is displayed.
 
 ---
 
@@ -47,10 +50,11 @@ This multistep form script enhances a standard HTML form by splitting it into mu
 - **Restricted Forward Navigation**: Users cannot navigate to future steps via the navigation bar, preventing skipping required steps.
 - **Progress Bar**: Visually indicates the user's progress through the form.
 - **Keyboard Navigation**: Optional support for navigating with the Enter key.
+- **Custom Success Message**: Display a custom message upon successful form submission.
 - **Validation**: Validates inputs in visible steps, blocking navigation if validation fails.
 - **Navigation History**: Tracks visited steps for proper back navigation.
 - **Accessibility**: Implements ARIA attributes and roles for better accessibility.
-- **Customizable Styling**: Add classes to style navigation steps and progress bar.
+- **Customizable Styling**: Add classes to style navigation steps, progress bar, and success message.
 
 ---
 
@@ -62,7 +66,7 @@ This multistep form script enhances a standard HTML form by splitting it into mu
 
   ```html
   <div ms="wrapper">
-    <form ms-keyboard-nav>
+    <form ms-keyboard-nav action="/submit-form" method="POST">
       <!-- Steps go here -->
     </form>
   </div>
@@ -71,7 +75,7 @@ This multistep form script enhances a standard HTML form by splitting it into mu
 - **Steps**: Each step is a direct child `<div>` of the `<form>`.
 
   ```html
-  <form ms-keyboard-nav>
+  <form ms-keyboard-nav action="/submit-form" method="POST">
     <div ms-step-name="Step 1">
       <!-- Content for Step 1 -->
     </div>
@@ -82,7 +86,7 @@ This multistep form script enhances a standard HTML form by splitting it into mu
   </form>
   ```
 
-  **Note**: The `ms-keyboard-nav` attribute on the `<form>` enables keyboard navigation.
+  **Note**: The `ms-keyboard-nav` attribute on the `<form>` enables keyboard navigation. Set the `action` and `method` attributes according to your server endpoint.
 
 ### **Required Attributes**
 
@@ -306,7 +310,55 @@ To enable keyboard navigation, add the `ms-keyboard-nav` attribute to your `<for
 
 ---
 
-## **8. Validation Handling**
+## **8. Success Message Handling**
+
+### **Displaying a Custom Success Message**
+
+When the form is successfully submitted, you may want to display a custom success message and hide the form and navigation elements.
+
+#### **Instructions**
+
+1. **Add the Success Message Div**
+
+   Include a div with the `ms-success` attribute in your HTML where you want the success message to appear.
+
+   ```html
+   <div ms-success>
+     <!-- Your custom success message -->
+     <h2>Thank you for your submission!</h2>
+     <p>We have received your information and will get back to you shortly.</p>
+   </div>
+   ```
+
+   **Note**: Place this div inside the `ms="wrapper"` container but outside the `<form>` element.
+
+2. **Style the Success Message Div**
+
+   Ensure the success message is hidden initially:
+
+   ```css
+   [ms-success] {
+     display: none;
+   }
+   ```
+
+   The script will automatically show this div upon successful form submission.
+
+### **How It Works**
+
+- **AJAX Form Submission**: The script handles form submission via AJAX to prevent the default page reload.
+- **Upon Successful Submission**:
+  - The form, navigation buttons, navigation steps, and progress bar are hidden.
+  - The success message div (`ms-success`) is displayed.
+- **Server Response**:
+  - Ensure your server endpoint specified in the form's `action` attribute can handle the form data submission and returns an appropriate HTTP status code (200 for success).
+- **Error Handling**:
+  - If the server returns an error status, the script logs the error to the console.
+  - Customize error handling as needed.
+
+---
+
+## **9. Validation Handling**
 
 - **Visible Inputs**: Only inputs in the current visible step are validated.
 - **Required Fields**: Required attributes are managed dynamically to prevent validation of hidden fields.
@@ -314,7 +366,7 @@ To enable keyboard navigation, add the `ms-keyboard-nav` attribute to your `<for
 
 ---
 
-## **9. Accessibility Features**
+## **10. Accessibility Features**
 
 - **ARIA Attributes**: Steps, navigation elements, and progress bar include appropriate ARIA roles and attributes.
 - **Focus Management**: The first input in each step is focused when the step is displayed.
@@ -332,7 +384,7 @@ Update `aria-valuenow` dynamically if needed (the script currently does not upda
 
 ---
 
-## **10. API Methods**
+## **11. API Methods**
 
 The script provides an API accessible via `window.multiStepFormAPI`.
 
@@ -345,7 +397,7 @@ The script provides an API accessible via `window.multiStepFormAPI`.
 
 ---
 
-## **11. Example Implementation**
+## **12. Example Implementation**
 
 ```html
 <!-- Wrapper -->
@@ -361,7 +413,7 @@ The script provides an API accessible via `window.multiStepFormAPI`.
   </p>
 
   <!-- Form -->
-  <form ms-keyboard-nav>
+  <form ms-keyboard-nav action="/submit-form" method="POST">
     <!-- Step 1: Customer Type Selection -->
     <div ms-step-name="Customer Type">
       <p>Please select customer type:</p>
@@ -421,6 +473,12 @@ The script provides an API accessible via `window.multiStepFormAPI`.
     <div ms-nav-steps="step" class="nav-step">Step</div>
     <span ms-nav-steps="divider" class="nav-divider">></span>
   </div>
+
+  <!-- Success Message -->
+  <div ms-success>
+    <h2>Thank you for your submission!</h2>
+    <p>We have received your information and will get back to you shortly.</p>
+  </div>
 </div>
 
 <!-- Include the script -->
@@ -429,19 +487,21 @@ The script provides an API accessible via `window.multiStepFormAPI`.
 
 ---
 
-## **12. Best Practices**
+## **13. Best Practices**
 
 - **Consistent Input Names**: Ensure the `name` attributes of inputs match those used in `data-condition`.
 - **Avoid Skipping Steps**: Use the script's navigation restrictions to prevent users from skipping required steps.
 - **Style Deactivated Steps**: Use the "is-deactive" class to visually indicate steps that are not yet accessible.
 - **Customize the Progress Bar**: Adjust the CSS to match your site's branding and layout.
-- **Test Thoroughly**: Test your form with various inputs to ensure conditional logic, validation, and progress bar updates work as expected.
+- **Test Thoroughly**: Test your form with various inputs to ensure conditional logic, validation, progress bar updates, and success message display work as expected.
 - **Accessibility Compliance**: Ensure your styles do not interfere with the ARIA attributes and roles.
 - **Use `ms-step-divider` for Visual Editing**: Utilize `ms-step-divider` in editors like Webflow to separate steps visually; these will be removed on the live site.
+- **Server-Side Handling**: Ensure your server endpoint can handle the form data submission and returns appropriate HTTP status codes.
+- **Error Handling**: Customize the error handling in the script if needed to provide feedback to the user upon submission errors.
 
 ---
 
-## **13. Troubleshooting**
+## **14. Troubleshooting**
 
 - **Steps Not Showing/Hiding Correctly**:
   - Verify `data-condition` syntax and input names.
@@ -463,15 +523,24 @@ The script provides an API accessible via `window.multiStepFormAPI`.
   - Ensure the `ms-keyboard-nav` attribute is added to the `<form>` element.
   - Check for conflicts with other scripts or event listeners.
 
+- **Success Message Not Displaying**:
+  - Confirm that the success message div has the `ms-success` attribute.
+  - Ensure the server is returning an HTTP status code of 200 upon successful submission.
+  - Check the console for any submission errors.
+
+- **Form Not Submitting**:
+  - Ensure the form's `action` and `method` attributes are correctly set.
+  - Verify that the server endpoint is accessible and properly configured to handle the form data.
+
 - **Styles Not Applying**:
   - Verify that the classes `is-active` and `is-deactive` are correctly used in your CSS.
   - Ensure that CSS selectors match the elements correctly.
 
 ---
 
-## **14. Conclusion**
+## **15. Conclusion**
 
-By following this guide, you can effectively implement a multistep form with conditional logic, restricted forward navigation, keyboard navigation, and a progress bar. The script ensures users complete all required steps in order, provides visual feedback on their progress, and enhances the overall user experience.
+By following this guide, you can effectively implement a multistep form with conditional logic, restricted forward navigation, keyboard navigation, a progress bar, and a custom success message. The script ensures users complete all required steps in order, provides visual feedback on their progress, and enhances the overall user experience by displaying a success message upon submission.
 
 ---
 
@@ -481,10 +550,11 @@ By following this guide, you can effectively implement a multistep form with con
 
 # **Final Notes**
 
-- **Script Updates**: The script now handles `ms-step-divider` elements, supports optional keyboard navigation, and includes the latest features.
+- **Script Updates**: The script now handles `ms-step-divider` elements, supports optional keyboard navigation, includes success message handling, and provides the latest features.
 - **CDN Link**: Use the provided CDN link to include the latest version of the script.
 - **Customization**: Feel free to customize the script and styles to suit your project's needs.
+- **Server-Side Handling**: Ensure your server can handle the form submission and returns appropriate responses.
 
 ---
 
-I hope this addresses your requests! If you have any further questions or need additional assistance, please let me know.
+Thank you for using the multistep form script! We hope it enhances your form's functionality and user experience.
