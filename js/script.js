@@ -364,9 +364,9 @@ document.addEventListener("DOMContentLoaded", function () {
     function handleKeyDown(event) {
       if (!keyboardNavEnabled) return;
 
-      if (event.target.tagName === "TEXTAREA") return; // Ignore in textareas
+      if (event.target.tagName === "TEXTAREA") return; // Allow default behavior in textareas
 
-      // Prevent default Enter key behavior
+      // Prevent default Enter key behavior to control navigation
       if (event.key === 'Enter') {
         event.preventDefault();
       }
@@ -389,6 +389,43 @@ document.addEventListener("DOMContentLoaded", function () {
       if (keyboardNavEnabled) {
         form.addEventListener("keydown", handleKeyDown);
       }
+    }
+
+    function debounce(func, wait) {
+      let timeout;
+      return function (...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), wait);
+      };
+    }
+
+    const debouncedFilterSteps = debounce(() => {
+      filterSteps();
+      if (!filteredSteps.includes(steps[currentStep])) {
+        if (currentStep >= filteredSteps.length) {
+          currentStep = filteredSteps.length - 1;
+        }
+        showStep(currentStep);
+      } else {
+        updateNavSteps(filteredSteps, currentStep);
+        updateButtons(filteredSteps, currentStep);
+        updateProgressBar(filteredSteps, currentStep);
+        updateRequiredAttributes(filteredSteps);
+      }
+    }, 100);
+
+    const observer = new MutationObserver(debouncedFilterSteps);
+
+    observer.observe(form, {
+      childList: true,
+      subtree: true,
+    });
+
+    function setupConditionalListeners() {
+      const allInputs = form.querySelectorAll("input, select, textarea");
+      allInputs.forEach((input) => {
+        input.addEventListener("change", debouncedFilterSteps);
+      });
     }
 
     (function initializeMultiStepForm() {
@@ -425,6 +462,6 @@ document.addEventListener("DOMContentLoaded", function () {
       },
     };
 
-    console.log("MultiStep forms v2.0.9 initialized!");
+    console.log("MultiStep forms v2.1.0 initialized!");
   })();
 });
