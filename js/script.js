@@ -22,6 +22,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let stepHistory = [];
     let steps = [];
     let filteredSteps = [];
+    let initialLoad = true; // Flag to indicate initial load
 
     if (!form || !prevButton || !nextButton) {
       console.error(
@@ -81,8 +82,10 @@ document.addEventListener("DOMContentLoaded", function () {
       currentStepElement.setAttribute("aria-hidden", "false");
       setTimeout(() => {
         currentStepElement.style.opacity = 1;
-        const firstInput = currentStepElement.querySelector("input, select, textarea");
-        if (firstInput) firstInput.focus();
+        if (!initialLoad) {
+          const firstInput = currentStepElement.querySelector("input, select, textarea");
+          if (firstInput) firstInput.focus();
+        }
       }, 100);
 
       updateNavSteps(filteredSteps, stepIndex);
@@ -91,6 +94,7 @@ document.addEventListener("DOMContentLoaded", function () {
       updateRequiredAttributes(filteredSteps);
 
       currentStep = stepIndex; // Update currentStep to the new index
+      initialLoad = false; // Set initialLoad to false after first step is shown
     }
 
     function updateNavSteps(filteredSteps, currentStepIndex) {
@@ -462,6 +466,6 @@ document.addEventListener("DOMContentLoaded", function () {
       },
     };
 
-    console.log("MultiStep forms v2.1.0 initialized!");
+    console.log("MultiStep forms v2.1.1 initialized!");
   })();
 });
