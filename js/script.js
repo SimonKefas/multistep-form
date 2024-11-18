@@ -22,7 +22,6 @@ document.addEventListener("DOMContentLoaded", function () {
     let stepHistory = [];
     let steps = [];
     let filteredSteps = [];
-    let initialLoad = true; // Flag to indicate initial load
 
     if (!form || !prevButton || !nextButton) {
       console.error(
@@ -56,7 +55,7 @@ document.addEventListener("DOMContentLoaded", function () {
       return !!(element.offsetWidth || element.offsetHeight || element.getClientRects().length);
     }
 
-    function showStep(stepIndex) {
+    function showStep(stepIndex, shouldFocus = false) {
       filterSteps(); // Update filteredSteps based on current conditions
 
       steps.forEach((step) => {
@@ -82,7 +81,7 @@ document.addEventListener("DOMContentLoaded", function () {
       currentStepElement.setAttribute("aria-hidden", "false");
       setTimeout(() => {
         currentStepElement.style.opacity = 1;
-        if (!initialLoad) {
+        if (shouldFocus) {
           const firstInput = currentStepElement.querySelector("input, select, textarea");
           if (firstInput) firstInput.focus();
         }
@@ -94,7 +93,6 @@ document.addEventListener("DOMContentLoaded", function () {
       updateRequiredAttributes(filteredSteps);
 
       currentStep = stepIndex; // Update currentStep to the new index
-      initialLoad = false; // Set initialLoad to false after first step is shown
     }
 
     function updateNavSteps(filteredSteps, currentStepIndex) {
@@ -127,7 +125,7 @@ document.addEventListener("DOMContentLoaded", function () {
           stepClone.addEventListener("click", () => {
             if (index < currentStepIndex) {
               stepHistory.push(currentStep);
-              showStep(index);
+              showStep(index, false); // No autofocus on click
             }
           });
         } else {
@@ -285,9 +283,9 @@ document.addEventListener("DOMContentLoaded", function () {
     function handlePrevClick() {
       if (stepHistory.length > 0) {
         const prevStepIndex = stepHistory.pop();
-        showStep(prevStepIndex);
+        showStep(prevStepIndex, true); // Autofocus on user navigation
       } else if (currentStep > 0) {
-        showStep(currentStep - 1);
+        showStep(currentStep - 1, true); // Autofocus on user navigation
       }
     }
 
@@ -295,7 +293,7 @@ document.addEventListener("DOMContentLoaded", function () {
       if (validateStep(currentStep)) {
         if (currentStep < filteredSteps.length - 1) {
           stepHistory.push(currentStep);
-          showStep(currentStep + 1);
+          showStep(currentStep + 1, true); // Autofocus on user navigation
         }
       }
     }
@@ -321,7 +319,7 @@ document.addEventListener("DOMContentLoaded", function () {
         event.preventDefault();
         for (let i = 0; i < filteredSteps.length; i++) {
           if (!validateStep(i)) {
-            showStep(i);
+            showStep(i, true); // Autofocus to show validation message
             validateStep(i); // Show validation messages
             break;
           }
@@ -409,7 +407,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (currentStep >= filteredSteps.length) {
           currentStep = filteredSteps.length - 1;
         }
-        showStep(currentStep);
+        showStep(currentStep, false); // No autofocus when steps change automatically
       } else {
         updateNavSteps(filteredSteps, currentStep);
         updateButtons(filteredSteps, currentStep);
@@ -437,7 +435,7 @@ document.addEventListener("DOMContentLoaded", function () {
       setupConditionalListeners();
       setupKeyboardNavigation();
       form.addEventListener("submit", handleFormSubmit);
-      showStep(0);
+      showStep(0, false); // No autofocus on initial load
       document.querySelector('[ms="wrapper"]').style.cssText = "display: block; opacity: 1";
 
       // Initialize progress bar on load
@@ -449,7 +447,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (stepIndex <= currentStep) {
           // Allow navigating to previous steps
           stepHistory.push(currentStep);
-          showStep(stepIndex);
+          showStep(stepIndex, false); // No autofocus when setting step programmatically
         }
       },
       getCurrentStep() {
@@ -466,6 +464,6 @@ document.addEventListener("DOMContentLoaded", function () {
       },
     };
 
-    console.log("MultiStep forms v2.1.1 initialized!");
+    console.log("MultiStep forms v2.1.2 initialized!");
   })();
 });
