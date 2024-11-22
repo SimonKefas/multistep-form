@@ -31,20 +31,8 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function filterSteps() {
-      steps = Array.from(form.children).filter((step) => {
-        return !step.querySelector(
-          '[class*="recaptcha"], [class*="h-captcha"], [class*="turnstile"], [class*="captcha"]'
-        );
-      });
-
-      // Remove step dividers from the live form
-      steps = steps.filter((step) => {
-        if (step.hasAttribute("ms-step-divider")) {
-          step.remove(); // Remove the divider from the live form
-          return false;
-        }
-        return true;
-      });
+      // Select only elements with the 'ms-step' attribute
+      steps = Array.from(form.querySelectorAll('[ms-step]'));
 
       filteredSteps = getFilteredSteps();
     }
@@ -464,6 +452,6 @@ document.addEventListener("DOMContentLoaded", function () {
       },
     };
 
-    console.log("MultiStep forms v2.1.2 initialized!");
+    console.log("MultiStep forms v2.2.0 initialized!");
   })();
 });

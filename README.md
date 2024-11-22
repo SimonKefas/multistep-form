@@ -1,12 +1,13 @@
 # **Multistep Form with Conditional Logic, Validation, and Custom Keyboard Navigation**
 
-This guide provides straightforward instructions to implement a multistep form with conditional steps, validation, custom keyboard navigation, and progress indicators. The script enhances user experience by guiding them through the form step-by-step, ensuring data integrity, and providing visual progress feedback.
+This guide provides comprehensive instructions to implement a multistep form with conditional steps, validation, custom keyboard navigation, and progress indicators. The script enhances user experience by guiding them through the form step-by-step, ensuring data integrity, and providing visual progress feedback.
 
 ---
 
 ## **Features**
 
 - **Multistep Navigation**: Break down long forms into manageable steps.
+- **Custom Step Definition**: Only elements with `ms-step` are treated as steps, giving you full control.
 - **Conditional Logic**: Show or hide steps based on user input.
 - **Form Validation**: Validate inputs at each step before proceeding.
 - **Custom Keyboard Navigation**: Navigate using customizable key combinations.
@@ -51,53 +52,39 @@ Use a standard `<form>` element. Add `ms-keyboard-nav` if you want keyboard navi
 
 **Note**: By default, keyboard navigation uses **Shift+Enter** to go to the next step and **Alt+Enter** to go to the previous step.
 
+### **3. Defining Form Steps**
+
+Only elements within the `<form>` that have the `ms-step` attribute are considered steps.
+
 #### **Form Steps**
 
-Each step is a `<div>` inside the `<form>`:
+Each step is an element (e.g., `<div>`, `<section>`) inside the `<form>` with the `ms-step` attribute:
 
 ```html
 <form>
-  <div ms-step-name="Step 1">
+  <div ms-step ms-step-name="Step 1">
     <!-- Step 1 content -->
   </div>
-  <div ms-step-name="Step 2">
+  <div ms-step ms-step-name="Step 2">
     <!-- Step 2 content -->
   </div>
   <!-- Additional steps -->
 </form>
 ```
 
-#### **Navigation Buttons**
+- **`ms-step` Attribute**: Marks the element as a step in the multistep form.
+- **`ms-step-name` Attribute** (Optional): Provides a custom name for the step, used in navigation and progress indicators.
 
-Add Previous and Next buttons with the following attributes:
+#### **Non-Step Elements**
 
-```html
-<button type="button" ms-nav="prev">Previous</button>
-<button type="button" ms-nav="next">Next</button>
-```
+You can include other elements within the form that are not steps, such as hidden inputs, summary sections, or additional form controls. These elements will not be affected by the multistep functionality.
 
-### **3. Progress Bar (Optional)**
-
-Add progress indicators anywhere inside the wrapper:
-
-```html
-<!-- Progress Bar -->
-<div ms-progress-wrap>
-  <div ms-progress-bar></div>
-</div>
-
-<!-- Step Indicators -->
-<p>
-  Step <span ms-current-step></span> of <span ms-total-steps></span>
-</p>
-```
-
-### **4. Conditional Steps (Optional)**
+#### **Conditional Steps**
 
 Show or hide steps based on user input using `data-condition`:
 
 ```html
-<div data-condition="inputName == 'value'" ms-step-name="Conditional Step">
+<div ms-step data-condition="inputName == 'value'" ms-step-name="Conditional Step">
   <!-- Content for conditional step -->
 </div>
 ```
@@ -116,12 +103,39 @@ Show or hide steps based on user input using `data-condition`:
 </label>
 
 <!-- Conditional step for business customers -->
-<div data-condition="customerType == 'business'" ms-step-name="Business Details">
+<div ms-step data-condition="customerType == 'business'" ms-step-name="Business Details">
   <!-- Business-specific fields -->
 </div>
 ```
 
-### **5. Success Message (Optional)**
+### **4. Navigation Buttons**
+
+Add Previous and Next buttons with the following attributes:
+
+```html
+<button type="button" ms-nav="prev">Previous</button>
+<button type="button" ms-nav="next">Next</button>
+```
+
+- **Placement**: Buttons can be placed inside or outside the form, as needed.
+
+### **5. Progress Bar (Optional)**
+
+Add progress indicators anywhere inside the wrapper:
+
+```html
+<!-- Progress Bar -->
+<div ms-progress-wrap>
+  <div ms-progress-bar></div>
+</div>
+
+<!-- Step Indicators -->
+<p>
+  Step <span ms-current-step></span> of <span ms-total-steps></span>
+</p>
+```
+
+### **6. Success Message (Optional)**
 
 Use your platform's built-in success message (e.g., Webflow's success message). The script hides navigation elements upon form submission to display the success message without interference.
 
@@ -227,7 +241,7 @@ If using navigation steps, style the active and deactivated steps:
   <!-- Form -->
   <form ms-keyboard-nav data-next-key="Shift+Enter" data-prev-key="Alt+Enter" action="/submit-form" method="POST">
     <!-- Step 1 -->
-    <div ms-step-name="Customer Type">
+    <div ms-step ms-step-name="Customer Type">
       <label>
         <input type="radio" name="customerType" value="individual" required>
         Individual
@@ -239,12 +253,12 @@ If using navigation steps, style the active and deactivated steps:
     </div>
 
     <!-- Step 2 (Conditional) -->
-    <div data-condition="customerType == 'business'" ms-step-name="Business Details">
+    <div ms-step data-condition="customerType == 'business'" ms-step-name="Business Details">
       <!-- Business-specific fields -->
     </div>
 
     <!-- Step 3 -->
-    <div ms-step-name="Contact Information">
+    <div ms-step ms-step-name="Contact Information">
       <!-- Contact fields -->
     </div>
 
@@ -265,6 +279,7 @@ If using navigation steps, style the active and deactivated steps:
 
 ## **Key Points**
 
+- **Custom Step Definition**: Only elements with `ms-step` are considered steps, providing flexibility in form design.
 - **Validation**: The script validates inputs in the current step before allowing navigation.
 - **Conditional Logic**: Steps with `data-condition` attributes are shown or hidden based on user input.
 - **Preventing Premature Submission**: The default Enter key behavior is managed to prevent unintended form submissions.
@@ -276,6 +291,7 @@ If using navigation steps, style the active and deactivated steps:
 
 ## **Best Practices**
 
+- **Defining Steps**: Ensure that all your step elements within the form have the `ms-step` attribute.
 - **Input Names**: Ensure input `name` attributes match those used in `data-condition`.
 - **Required Fields**: Use the `required` attribute for mandatory fields.
 - **Testing**: Test the form thoroughly to ensure all steps and validations work as expected.
@@ -291,6 +307,7 @@ If using navigation steps, style the active and deactivated steps:
 - **Keyboard Navigation Not Working**: Ensure `ms-keyboard-nav` is added to the `<form>` and that key combinations are correctly specified.
 - **Progress Bar Not Updating**: Verify that `[ms-progress-wrap]` and `[ms-progress-bar]` are correctly included.
 - **Default Enter Key Behavior**: The script prevents default form submission when **Enter** is pressed. If you need to allow submissions via Enter key in specific cases, adjust the script accordingly.
+- **Autofocus Issues**: The script is designed not to autofocus on page load or when steps change automatically. Autofocus occurs only when the user navigates steps using the navigation buttons or keyboard shortcuts.
 
 ---
 
