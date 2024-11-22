@@ -419,6 +419,10 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     (function initializeMultiStepForm() {
+      // Remove elements with 'ms-step-divider' attribute
+      const stepDividers = form.querySelectorAll('[ms-step-divider]');
+      stepDividers.forEach((divider) => divider.remove());
+
       setupNavigationListeners();
       setupConditionalListeners();
       setupKeyboardNavigation();
@@ -452,6 +456,6 @@ document.addEventListener("DOMContentLoaded", function () {
       },
     };
 
-    console.log("MultiStep forms v2.2.0 initialized!");
+    console.log("MultiStep forms v2.2.1 initialized!");
   })();
 });

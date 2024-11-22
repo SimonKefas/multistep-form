@@ -1,6 +1,6 @@
 # **Multistep Form with Conditional Logic, Validation, and Custom Keyboard Navigation**
 
-This guide provides comprehensive instructions to implement a multistep form with conditional steps, validation, custom keyboard navigation, and progress indicators. The script enhances user experience by guiding them through the form step-by-step, ensuring data integrity, and providing visual progress feedback.
+This guide provides comprehensive instructions to implement a multistep form with conditional steps, validation, custom keyboard navigation, progress indicators, and removal of visual dividers. The script enhances user experience by guiding them through the form step-by-step, ensuring data integrity, and providing visual progress feedback.
 
 ---
 
@@ -12,6 +12,7 @@ This guide provides comprehensive instructions to implement a multistep form wit
 - **Form Validation**: Validate inputs at each step before proceeding.
 - **Custom Keyboard Navigation**: Navigate using customizable key combinations.
 - **Progress Bar**: Visual indicator of form completion.
+- **Visual Dividers Removal**: Automatically removes elements with `ms-step-divider` attribute.
 - **Accessible**: ARIA roles and attributes for better accessibility.
 - **Easy Integration**: Simple HTML attributes to enable features.
 - **Compatible with Webflow**: Works seamlessly with Webflow forms.
@@ -46,7 +47,7 @@ Use a standard `<form>` element. Add `ms-keyboard-nav` if you want keyboard navi
 
 ```html
 <form ms-keyboard-nav action="/submit-form" method="POST">
-  <!-- Steps go here -->
+  <!-- Steps and other elements go here -->
 </form>
 ```
 
@@ -108,7 +109,19 @@ Show or hide steps based on user input using `data-condition`:
 </div>
 ```
 
-### **4. Navigation Buttons**
+### **4. Visual Dividers**
+
+If you wish to include visual dividers between steps in your HTML but have them removed from the live form (e.g., for template purposes), you can use the `ms-step-divider` attribute.
+
+```html
+<div ms-step-divider>
+  <!-- Divider content (e.g., horizontal line, graphic) -->
+</div>
+```
+
+**Note**: The script will automatically remove elements with the `ms-step-divider` attribute from the DOM upon initialization.
+
+### **5. Navigation Buttons**
 
 Add Previous and Next buttons with the following attributes:
 
@@ -119,7 +132,7 @@ Add Previous and Next buttons with the following attributes:
 
 - **Placement**: Buttons can be placed inside or outside the form, as needed.
 
-### **5. Progress Bar (Optional)**
+### **6. Progress Bar (Optional)**
 
 Add progress indicators anywhere inside the wrapper:
 
@@ -135,7 +148,7 @@ Add progress indicators anywhere inside the wrapper:
 </p>
 ```
 
-### **6. Success Message (Optional)**
+### **7. Success Message (Optional)**
 
 Use your platform's built-in success message (e.g., Webflow's success message). The script hides navigation elements upon form submission to display the success message without interference.
 
@@ -252,6 +265,11 @@ If using navigation steps, style the active and deactivated steps:
       </label>
     </div>
 
+    <!-- Divider (Will be removed by the script) -->
+    <div ms-step-divider>
+      <!-- Divider content (e.g., a horizontal line) -->
+    </div>
+
     <!-- Step 2 (Conditional) -->
     <div ms-step data-condition="customerType == 'business'" ms-step-name="Business Details">
       <!-- Business-specific fields -->
@@ -280,6 +298,7 @@ If using navigation steps, style the active and deactivated steps:
 ## **Key Points**
 
 - **Custom Step Definition**: Only elements with `ms-step` are considered steps, providing flexibility in form design.
+- **Visual Dividers Removal**: Elements with the `ms-step-divider` attribute are automatically removed from the DOM, allowing you to include them in your HTML for template purposes without affecting the live form.
 - **Validation**: The script validates inputs in the current step before allowing navigation.
 - **Conditional Logic**: Steps with `data-condition` attributes are shown or hidden based on user input.
 - **Preventing Premature Submission**: The default Enter key behavior is managed to prevent unintended form submissions.
@@ -292,6 +311,7 @@ If using navigation steps, style the active and deactivated steps:
 ## **Best Practices**
 
 - **Defining Steps**: Ensure that all your step elements within the form have the `ms-step` attribute.
+- **Using Dividers**: If you include visual dividers with the `ms-step-divider` attribute, be aware that they will be removed from the live form.
 - **Input Names**: Ensure input `name` attributes match those used in `data-condition`.
 - **Required Fields**: Use the `required` attribute for mandatory fields.
 - **Testing**: Test the form thoroughly to ensure all steps and validations work as expected.
@@ -308,6 +328,7 @@ If using navigation steps, style the active and deactivated steps:
 - **Progress Bar Not Updating**: Verify that `[ms-progress-wrap]` and `[ms-progress-bar]` are correctly included.
 - **Default Enter Key Behavior**: The script prevents default form submission when **Enter** is pressed. If you need to allow submissions via Enter key in specific cases, adjust the script accordingly.
 - **Autofocus Issues**: The script is designed not to autofocus on page load or when steps change automatically. Autofocus occurs only when the user navigates steps using the navigation buttons or keyboard shortcuts.
+- **Dividers Still Visible**: If elements with `ms-step-divider` are still visible, ensure that the script is correctly included and that there are no JavaScript errors preventing it from running.
 
 ---
 
@@ -326,3 +347,5 @@ Thank you for choosing this multistep form solution to enhance your forms. Happy
 **Note**: Always ensure that any custom key combinations used do not conflict with browser shortcuts or accessibility features. It's important to test your form with various assistive technologies to ensure it remains accessible to all users.
 
 ---
+
+**Final Reminder**: Remember to test your form thoroughly after implementing these changes to ensure that all functionalities work as expected, and that elements like visual dividers are being removed as intended.
