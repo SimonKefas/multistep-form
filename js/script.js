@@ -1,17 +1,23 @@
 document.addEventListener("DOMContentLoaded", function () {
   (function () {
-    const form = document.querySelector('[ms="wrapper"] > form');
-    const prevButton = document.querySelector('[ms-nav="prev"]');
-    const nextButton = document.querySelector('[ms-nav="next"]');
-    const navContainer = document.querySelector('[ms-nav-steps="container"]');
-    const navStepTemplate = document.querySelector('[ms-nav-steps="step"]');
-    const navSeparatorTemplate = document.querySelector('[ms-nav-steps="divider"]');
+    const wrapper = document.querySelector('[ms="wrapper"]');
+    if (!wrapper) {
+      console.error("Multistep form wrapper not found.");
+      return;
+    }
+
+    const form = wrapper.querySelector('form');
+    const prevButton = wrapper.querySelector('[ms-nav="prev"]');
+    const nextButton = wrapper.querySelector('[ms-nav="next"]');
+    const navContainer = wrapper.querySelector('[ms-nav-steps="container"]');
+    const navStepTemplate = wrapper.querySelector('[ms-nav-steps="step"]');
+    const navSeparatorTemplate = wrapper.querySelector('[ms-nav-steps="divider"]');
 
     // Progress Bar Elements
-    const progressWrap = document.querySelector('[ms-progress-wrap]');
-    const progressBar = document.querySelector('[ms-progress-bar]');
-    const currentStepElement = document.querySelector('[ms-current-step]');
-    const totalStepsElement = document.querySelector('[ms-total-steps]');
+    const progressWrap = wrapper.querySelector('[ms-progress-wrap]');
+    const progressBar = wrapper.querySelector('[ms-progress-bar]');
+    const currentStepElement = wrapper.querySelector('[ms-current-step]');
+    const totalStepsElement = wrapper.querySelector('[ms-total-steps]');
 
     // Keyboard Navigation Option
     const keyboardNavEnabled = form.hasAttribute('ms-keyboard-nav');
@@ -25,13 +31,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (!form || !prevButton || !nextButton) {
       console.error(
-        "Required elements not found in the DOM. Please add the ms='wrapper', ms-nav='prev', ms-nav='next' to relevant elements."
+        "Required elements not found in the multistep form. Please ensure ms='wrapper', ms-nav='prev', ms-nav='next' are correctly set within the multistep form."
       );
       return;
     }
 
     function filterSteps() {
-      // Select only elements with the 'ms-step' attribute
+      // Select only elements with the 'ms-step' attribute within the form
       steps = Array.from(form.querySelectorAll('[ms-step]'));
 
       filteredSteps = getFilteredSteps();
@@ -428,7 +434,7 @@ document.addEventListener("DOMContentLoaded", function () {
       setupKeyboardNavigation();
       form.addEventListener("submit", handleFormSubmit);
       showStep(0, false); // No autofocus on initial load
-      document.querySelector('[ms="wrapper"]').style.cssText = "display: block; opacity: 1";
+      wrapper.style.cssText = "display: block; opacity: 1";
 
       // Initialize progress bar on load
       updateProgressBar(filteredSteps, currentStep);
@@ -456,6 +462,6 @@ document.addEventListener("DOMContentLoaded", function () {
       },
     };
 
-    console.log("MultiStep forms v2.2.1 initialized!");
+    console.log("Multistep form v2.2.2 initialized!");
   })();
 });
