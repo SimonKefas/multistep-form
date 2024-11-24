@@ -1,12 +1,13 @@
 # **Multistep Form with Conditional Logic, Validation, and Custom Keyboard Navigation**
 
-This guide provides comprehensive instructions to implement a multistep form with conditional steps, validation, custom keyboard navigation, progress indicators, and removal of visual dividers. The script enhances user experience by guiding them through the form step-by-step, ensuring data integrity, and providing visual progress feedback.
+This guide provides comprehensive instructions to implement one or more multistep forms on the same page, with features like conditional steps, validation, custom keyboard navigation, progress indicators, and more. The script enhances user experience by guiding them through the form step-by-step, ensuring data integrity, and providing visual progress feedback.
 
 ---
 
 ## **Features**
 
 - **Multistep Navigation**: Break down long forms into manageable steps.
+- **Multiple Forms Support**: Have multiple multistep forms on the same page.
 - **Custom Step Definition**: Only elements with `ms-step` are treated as steps, giving you full control.
 - **Conditional Logic**: Show or hide steps based on user input.
 - **Form Validation**: Validate inputs at each step before proceeding.
@@ -29,21 +30,29 @@ Add the following script before the closing `</body>` tag:
 <script src="https://cdn.jsdelivr.net/gh/SimonKefas/multistep-form@latest/js/script.js"></script>
 ```
 
+**Note**: You only need to include the script once, even if you have multiple multistep forms on the page.
+
 ### **2. HTML Structure**
 
 #### **Wrapper**
 
-Wrap your form inside a container with `ms="wrapper"`:
+Wrap each multistep form inside a separate container with `ms="wrapper"`:
 
 ```html
 <div ms="wrapper">
-  <!-- Form goes here -->
+  <!-- First multistep form goes here -->
+</div>
+
+<!-- You can have other content or forms here -->
+
+<div ms="wrapper">
+  <!-- Second multistep form goes here -->
 </div>
 ```
 
 #### **Form Element**
 
-Use a standard `<form>` element. Add `ms-keyboard-nav` if you want keyboard navigation:
+Use a standard `<form>` element inside each wrapper. Add `ms-keyboard-nav` if you want keyboard navigation:
 
 ```html
 <form ms-keyboard-nav action="/submit-form" method="POST">
@@ -123,14 +132,14 @@ If you wish to include visual dividers between steps in your HTML but have them 
 
 ### **5. Navigation Buttons**
 
-Add Previous and Next buttons with the following attributes:
+Add Previous and Next buttons with the following attributes inside each wrapper:
 
 ```html
 <button type="button" ms-nav="prev">Previous</button>
 <button type="button" ms-nav="next">Next</button>
 ```
 
-- **Placement**: Buttons can be placed inside or outside the form, as needed.
+- **Placement**: Buttons should be placed within the `ms="wrapper"` container of their respective forms.
 
 ### **6. Progress Bar (Optional)**
 
@@ -199,6 +208,50 @@ You can customize the key combinations by setting `data-next-key` and `data-prev
 
 ---
 
+## **Implementing Multiple Multistep Forms**
+
+To use multiple multistep forms on the same page:
+
+1. **Wrap Each Form Separately**:
+
+   - Each multistep form should be wrapped inside a container with the `ms="wrapper"` attribute.
+
+   ```html
+   <div ms="wrapper">
+     <!-- First multistep form -->
+     <form ms-keyboard-nav data-next-key="Shift+Enter" data-prev-key="Alt+Enter">
+       <!-- Steps and other elements -->
+     </form>
+     <!-- Navigation Buttons -->
+     <button type="button" ms-nav="prev">Previous</button>
+     <button type="button" ms-nav="next">Next</button>
+   </div>
+
+   <!-- Other content or forms -->
+
+   <div ms="wrapper">
+     <!-- Second multistep form -->
+     <form ms-keyboard-nav data-next-key="Shift+Enter" data-prev-key="Alt+Enter">
+       <!-- Steps and other elements -->
+     </form>
+     <!-- Navigation Buttons -->
+     <button type="button" ms-nav="prev">Previous</button>
+     <button type="button" ms-nav="next">Next</button>
+   </div>
+   ```
+
+2. **Unique Elements Within Each Wrapper**:
+
+   - Ensure that all elements with `ms-` attributes (e.g., `[ms-nav="prev"]`, `[ms-step]`, `[ms-progress-wrap]`) are within their respective wrappers.
+   - This ensures that each form instance operates independently.
+
+3. **Include the Script Once**:
+
+   - You only need to include the script once at the end of the body.
+   - The script will automatically initialize all multistep forms on the page.
+
+---
+
 ## **Styling**
 
 ### **Progress Bar Styles**
@@ -243,7 +296,7 @@ If using navigation steps, style the active and deactivated steps:
 ## **Complete Example**
 
 ```html
-<!-- Wrapper -->
+<!-- First Multistep Form -->
 <div ms="wrapper">
   <!-- Progress Bar -->
   <div ms-progress-wrap>
@@ -289,7 +342,35 @@ If using navigation steps, style the active and deactivated steps:
   <button type="button" ms-nav="next">Next</button>
 </div>
 
-<!-- Include the script -->
+<!-- Other content or forms -->
+
+<!-- Second Multistep Form -->
+<div ms="wrapper">
+  <!-- Progress Bar -->
+  <div ms-progress-wrap>
+    <div ms-progress-bar></div>
+  </div>
+  <p>Step <span ms-current-step></span> of <span ms-total-steps></span></p>
+
+  <!-- Form -->
+  <form ms-keyboard-nav action="/another-submit" method="POST">
+    <!-- Steps -->
+    <div ms-step ms-step-name="Step A">
+      <!-- Step A content -->
+    </div>
+    <div ms-step ms-step-name="Step B">
+      <!-- Step B content -->
+    </div>
+    <!-- Submit Button -->
+    <button type="submit">Submit</button>
+  </form>
+
+  <!-- Navigation Buttons -->
+  <button type="button" ms-nav="prev">Previous</button>
+  <button type="button" ms-nav="next">Next</button>
+</div>
+
+<!-- Include the script once -->
 <script src="https://cdn.jsdelivr.net/gh/SimonKefas/multistep-form@latest/js/script.js"></script>
 ```
 
@@ -298,6 +379,7 @@ If using navigation steps, style the active and deactivated steps:
 ## **Key Points**
 
 - **Custom Step Definition**: Only elements with `ms-step` are considered steps, providing flexibility in form design.
+- **Multiple Forms Support**: You can have multiple multistep forms on the same page, each operating independently.
 - **Visual Dividers Removal**: Elements with the `ms-step-divider` attribute are automatically removed from the DOM, allowing you to include them in your HTML for template purposes without affecting the live form.
 - **Validation**: The script validates inputs in the current step before allowing navigation.
 - **Conditional Logic**: Steps with `data-condition` attributes are shown or hidden based on user input.
@@ -317,6 +399,7 @@ If using navigation steps, style the active and deactivated steps:
 - **Testing**: Test the form thoroughly to ensure all steps and validations work as expected.
 - **Customization**: Feel free to style the form and progress indicators to match your branding.
 - **Accessibility**: Choose keyboard shortcuts that do not interfere with assistive technologies.
+- **Unique Scoping**: Make sure all `ms-` attributes are correctly scoped within each `ms="wrapper"` container to prevent conflicts.
 
 ---
 
@@ -325,10 +408,26 @@ If using navigation steps, style the active and deactivated steps:
 - **Form Not Submitting**: Ensure all required fields are filled and valid. Remember that pressing **Enter** will only submit the form on the last step.
 - **Steps Not Showing/Hiding**: Check `data-condition` syntax and input values.
 - **Keyboard Navigation Not Working**: Ensure `ms-keyboard-nav` is added to the `<form>` and that key combinations are correctly specified.
-- **Progress Bar Not Updating**: Verify that `[ms-progress-wrap]` and `[ms-progress-bar]` are correctly included.
+- **Progress Bar Not Updating**: Verify that `[ms-progress-wrap]` and `[ms-progress-bar]` are correctly included within the wrapper.
 - **Default Enter Key Behavior**: The script prevents default form submission when **Enter** is pressed. If you need to allow submissions via Enter key in specific cases, adjust the script accordingly.
 - **Autofocus Issues**: The script is designed not to autofocus on page load or when steps change automatically. Autofocus occurs only when the user navigates steps using the navigation buttons or keyboard shortcuts.
 - **Dividers Still Visible**: If elements with `ms-step-divider` are still visible, ensure that the script is correctly included and that there are no JavaScript errors preventing it from running.
+- **Multiple Forms Interference**: If forms are interfering with each other, check that all `ms-` attributes are properly scoped within their respective `ms="wrapper"` containers.
+
+---
+
+## **Performance, Scalability, and Accessibility Considerations**
+
+- **Performance**:
+  - The script uses debouncing and efficient event handling to minimize performance impacts.
+  - Only elements within each multistep form are manipulated, preventing unnecessary DOM operations.
+- **Scalability**:
+  - The modular design allows for multiple forms without code duplication or conflicts.
+  - The script automatically initializes all multistep forms on the page.
+- **Accessibility**:
+  - ARIA roles and attributes are used to enhance accessibility.
+  - Focus management ensures users can navigate using keyboard or assistive technologies.
+  - Custom keyboard navigation considers common accessibility practices.
 
 ---
 
@@ -340,7 +439,9 @@ If using navigation steps, style the active and deactivated steps:
 
 ---
 
-Thank you for choosing this multistep form solution to enhance your forms. Happy coding!
+## **Conclusion**
+
+By following this guide, you can implement one or more multistep forms on your page, enhancing user experience through guided navigation, validation, and visual feedback. The script is designed to be flexible, efficient, and accessible, ensuring it meets the needs of various projects.
 
 ---
 
@@ -348,4 +449,4 @@ Thank you for choosing this multistep form solution to enhance your forms. Happy
 
 ---
 
-**Final Reminder**: Remember to test your form thoroughly after implementing these changes to ensure that all functionalities work as expected, and that elements like visual dividers are being removed as intended.
+**Happy coding!**
