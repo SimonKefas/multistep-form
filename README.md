@@ -1,74 +1,83 @@
-# **Multistep Form with Conditional Logic, Validation, and Custom Keyboard Navigation**
+# Multistep Form – Modular, Scalable, and Customizable
 
-This guide provides comprehensive instructions to implement one or more multistep forms on the same page, with features like conditional steps, validation, custom keyboard navigation, progress indicators, and more. The script enhances user experience by guiding them through the form step-by-step, ensuring data integrity, and providing visual progress feedback.
-
----
-
-## **Features**
-
-- **Multistep Navigation**: Break down long forms into manageable steps.
-- **Multiple Forms Support**: Have multiple multistep forms on the same page.
-- **Custom Step Definition**: Only elements with `ms-step` are treated as steps, giving you full control.
-- **Conditional Logic**: Show or hide steps based on user input.
-- **Form Validation**: Validate inputs at each step before proceeding.
-- **Custom Keyboard Navigation**: Navigate using customizable key combinations.
-- **Progress Bar**: Visual indicator of form completion.
-- **Visual Dividers Removal**: Automatically removes elements with `ms-step-divider` attribute.
-- **Accessible**: ARIA roles and attributes for better accessibility.
-- **Easy Integration**: Simple HTML attributes to enable features.
-- **Compatible with Webflow**: Works seamlessly with Webflow forms.
+This solution is a modular multistep form system designed to work seamlessly on pages with one or more forms. It provides full control over which elements are treated as steps, supports conditional logic, form validation, progress indicators, custom keyboard navigation, and optional customization of navigation buttons—including converting the “Next” button into a submit button on the last step.
 
 ---
 
-## **Quick Setup Guide**
+## Features
 
-### **1. Include the Script**
+- **Modular & Scalable:**  
+  Encapsulated in a `MultiStepForm` class so you can have multiple independent multistep forms on the same page.
 
-Add the following script before the closing `</body>` tag:
+- **Custom Step Definition:**  
+  Only elements with the `ms-step` attribute inside the form are treated as steps. Optionally use `ms-step-name` to label each step.
+
+- **Conditional Logic:**  
+  Use `data-condition` on steps to show or hide them based on user input.
+
+- **Form Validation:**  
+  Validates inputs in the current step before allowing navigation to the next step.
+
+- **Progress Indicators:**  
+  Displays a progress bar and step counter using elements with `ms-progress-wrap`, `ms-progress-bar`, `ms-current-step`, and `ms-total-steps`.
+
+- **Custom Keyboard Navigation:**  
+  Enable keyboard navigation with customizable key combinations (default: Shift+Enter for next, Alt+Enter for previous). The default Enter key behavior is suppressed (except on the last step).
+
+- **Optional Navigation Buttons:**  
+  Global next/prev buttons are optional. If you supply custom buttons within a step (using the API), the global buttons aren’t required.
+
+- **Submit Button on Last Step:**  
+  Optionally, the global next button can be converted into a submit button on the last step by adding the attribute `data-change-last-button` (and customizing the label via `data-submit-label`).
+
+- **Visual Divider Removal:**  
+  Elements with `ms-step-divider` (used for visual separation in editors like Webflow) are automatically removed from the live form.
+
+- **Accessibility:**  
+  Implements ARIA roles and proper focus management for improved accessibility.
+
+- **Non-AJAX Submission:**  
+  The form submits naturally (using its action and method) to ensure compatibility with platforms like Webflow.
+
+---
+
+## Setup & Installation
+
+### 1. Include the Script
+
+Place the following script just before the closing `</body>` tag:
 
 ```html
 <script src="https://cdn.jsdelivr.net/gh/SimonKefas/multistep-form@latest/js/script.js"></script>
 ```
 
-**Note**: You only need to include the script once, even if you have multiple multistep forms on the page.
+You only need to include the script once even if you have multiple multistep forms on the page.
 
-### **2. HTML Structure**
+### 2. Structure Your HTML
 
-#### **Wrapper**
+#### Wrapper
 
-Wrap each multistep form inside a separate container with `ms="wrapper"`:
+Wrap each multistep form inside its own container with the attribute `ms="wrapper"`:
 
 ```html
 <div ms="wrapper">
-  <!-- First multistep form goes here -->
-</div>
-
-<!-- You can have other content or forms here -->
-
-<div ms="wrapper">
-  <!-- Second multistep form goes here -->
+  <!-- Multistep form content -->
 </div>
 ```
 
-#### **Form Element**
+#### Form Element
 
-Use a standard `<form>` element inside each wrapper. Add `ms-keyboard-nav` if you want keyboard navigation:
+Inside the wrapper, use a standard `<form>` element. Add `ms-keyboard-nav` to enable keyboard navigation and optionally customize key combos with `data-next-key` and `data-prev-key`:
 
 ```html
-<form ms-keyboard-nav action="/submit-form" method="POST">
-  <!-- Steps and other elements go here -->
+<form ms-keyboard-nav data-next-key="Shift+Enter" data-prev-key="Alt+Enter" action="/submit-form" method="POST">
+  <!-- Steps go here -->
 </form>
 ```
 
-**Note**: By default, keyboard navigation uses **Shift+Enter** to go to the next step and **Alt+Enter** to go to the previous step.
+#### Defining Steps
 
-### **3. Defining Form Steps**
-
-Only elements within the `<form>` that have the `ms-step` attribute are considered steps.
-
-#### **Form Steps**
-
-Each step is an element (e.g., `<div>`, `<section>`) inside the `<form>` with the `ms-step` attribute:
+Only elements with the `ms-step` attribute are treated as steps. You can provide a custom label with `ms-step-name`:
 
 ```html
 <form>
@@ -82,181 +91,125 @@ Each step is an element (e.g., `<div>`, `<section>`) inside the `<form>` with th
 </form>
 ```
 
-- **`ms-step` Attribute**: Marks the element as a step in the multistep form.
-- **`ms-step-name` Attribute** (Optional): Provides a custom name for the step, used in navigation and progress indicators.
+##### Conditional Steps
 
-#### **Non-Step Elements**
-
-You can include other elements within the form that are not steps, such as hidden inputs, summary sections, or additional form controls. These elements will not be affected by the multistep functionality.
-
-#### **Conditional Steps**
-
-Show or hide steps based on user input using `data-condition`:
+Add a `data-condition` attribute to any step to control its visibility:
 
 ```html
-<div ms-step data-condition="inputName == 'value'" ms-step-name="Conditional Step">
-  <!-- Content for conditional step -->
-</div>
-```
-
-**Example:**
-
-```html
-<!-- User selects customer type -->
-<label>
-  <input type="radio" name="customerType" value="individual" required>
-  Individual
-</label>
-<label>
-  <input type="radio" name="customerType" value="business">
-  Business
-</label>
-
-<!-- Conditional step for business customers -->
 <div ms-step data-condition="customerType == 'business'" ms-step-name="Business Details">
   <!-- Business-specific fields -->
 </div>
 ```
 
-### **4. Visual Dividers**
+#### Visual Dividers (Optional)
 
-If you wish to include visual dividers between steps in your HTML but have them removed from the live form (e.g., for template purposes), you can use the `ms-step-divider` attribute.
+For editing purposes, you can include elements with the `ms-step-divider` attribute. They will be removed automatically on page load:
 
 ```html
 <div ms-step-divider>
-  <!-- Divider content (e.g., horizontal line, graphic) -->
+  <!-- Divider content (e.g., a horizontal line) -->
 </div>
 ```
 
-**Note**: The script will automatically remove elements with the `ms-step-divider` attribute from the DOM upon initialization.
+#### Navigation Buttons
 
-### **5. Navigation Buttons**
-
-Add Previous and Next buttons with the following attributes inside each wrapper:
+Place global navigation buttons inside the wrapper. They are optional; if you provide custom buttons within your steps, the global ones aren’t required:
 
 ```html
 <button type="button" ms-nav="prev">Previous</button>
 <button type="button" ms-nav="next">Next</button>
 ```
 
-- **Placement**: Buttons should be placed within the `ms="wrapper"` container of their respective forms.
+#### Progress Indicators (Optional)
 
-### **6. Progress Bar (Optional)**
-
-Add progress indicators anywhere inside the wrapper:
+Add progress bar elements and step counters within the wrapper:
 
 ```html
-<!-- Progress Bar -->
 <div ms-progress-wrap>
   <div ms-progress-bar></div>
 </div>
-
-<!-- Step Indicators -->
-<p>
-  Step <span ms-current-step></span> of <span ms-total-steps></span>
-</p>
+<p>Step <span ms-current-step></span> of <span ms-total-steps></span></p>
 ```
 
-### **7. Success Message (Optional)**
+#### Success Message (Optional)
 
-Use your platform's built-in success message (e.g., Webflow's success message). The script hides navigation elements upon form submission to display the success message without interference.
+Use your platform’s built-in success message or add a custom one. The script hides navigation elements on submission to ensure a clean display of the success message:
+
+```html
+<!-- For platforms like Webflow, built-in messages are used. Otherwise, add your custom success message here. -->
+<div class="w-form-done">
+  <div>Thank you! Your submission has been received!</div>
+</div>
+```
 
 ---
 
-## **Custom Keyboard Navigation**
+## Custom Keyboard Navigation
 
-### **Enabling Keyboard Navigation**
+- **Enable:** Add `ms-keyboard-nav` to your `<form>`.
+- **Customize Keys:** Use `data-next-key` and `data-prev-key` attributes.
+- **Default Behavior:**
+  - **Next Step:** Shift+Enter
+  - **Previous Step:** Alt+Enter
+  - **Submission:** Press Enter on the last step (if valid)
 
-Add the `ms-keyboard-nav` attribute to your `<form>` element to enable keyboard navigation. You can also customize the key combinations for navigation using `data-next-key` and `data-prev-key`.
+Example:
 
 ```html
-<form ms-keyboard-nav data-next-key="Shift+Enter" data-prev-key="Alt+Enter">
-  <!-- Form steps -->
+<form ms-keyboard-nav data-next-key="Shift+Enter" data-prev-key="Alt+Enter" action="/submit-form" method="POST">
+  <!-- Steps -->
 </form>
 ```
 
-- **Default Key Combinations**:
-  - **Next Step**: **Shift+Enter**
-  - **Previous Step**: **Alt+Enter**
+---
 
-### **Usage**
+## Changing the Global Next Button on the Last Step
 
-- **Proceed to Next Step**: Press **Shift+Enter**.
-- **Go to Previous Step**: Press **Alt+Enter**.
-- **Submit the Form**: Press **Enter** on the last step (after all validations pass).
+To avoid having the navigation and submit button in separate places on the last step, you can have the global next button change into a submit button. Add the attribute `data-change-last-button="true"` on the form. Optionally, set a custom label with `data-submit-label`.
 
-### **Customizing Key Combinations**
+Example:
 
-You can customize the key combinations by setting `data-next-key` and `data-prev-key` attributes on the `<form>` element.
+```html
+<form ms-keyboard-nav data-change-last-button="true" data-submit-label="Send Now" action="/submit-form" method="POST">
+  <!-- Steps -->
+</form>
+```
 
-- **Example**:
+On the last step, the global next button will now display as “Send Now” and submit the form when clicked.
 
-  ```html
-  <form ms-keyboard-nav data-next-key="Ctrl+ArrowRight" data-prev-key="Ctrl+ArrowLeft">
-    <!-- Form steps -->
+---
+
+## Multiple Multistep Forms on One Page
+
+Each multistep form must be contained in its own wrapper with `ms="wrapper"`. This scopes all functionality (steps, navigation, progress, keyboard events) to that form only.
+
+Example:
+
+```html
+<!-- First Multistep Form -->
+<div ms="wrapper">
+  <form ms-keyboard-nav action="/submit-form" method="POST">
+    <!-- Steps -->
   </form>
-  ```
+  <button type="button" ms-nav="prev">Previous</button>
+  <button type="button" ms-nav="next">Next</button>
+</div>
 
-  - **Next Step**: **Ctrl+ArrowRight**
-  - **Previous Step**: **Ctrl+ArrowLeft**
-
-### **Notes**
-
-- **Preventing Default Submission**: The script prevents the default form submission when **Enter** is pressed, except when on the last step and all validations pass.
-- **Textarea Inputs**: The script allows normal behavior in `<textarea>` fields, so users can press **Enter** to create new lines.
-- **Accessibility Considerations**: Ensure that your chosen key combinations do not conflict with screen readers or other assistive technologies.
-
----
-
-## **Implementing Multiple Multistep Forms**
-
-To use multiple multistep forms on the same page:
-
-1. **Wrap Each Form Separately**:
-
-   - Each multistep form should be wrapped inside a container with the `ms="wrapper"` attribute.
-
-   ```html
-   <div ms="wrapper">
-     <!-- First multistep form -->
-     <form ms-keyboard-nav data-next-key="Shift+Enter" data-prev-key="Alt+Enter">
-       <!-- Steps and other elements -->
-     </form>
-     <!-- Navigation Buttons -->
-     <button type="button" ms-nav="prev">Previous</button>
-     <button type="button" ms-nav="next">Next</button>
-   </div>
-
-   <!-- Other content or forms -->
-
-   <div ms="wrapper">
-     <!-- Second multistep form -->
-     <form ms-keyboard-nav data-next-key="Shift+Enter" data-prev-key="Alt+Enter">
-       <!-- Steps and other elements -->
-     </form>
-     <!-- Navigation Buttons -->
-     <button type="button" ms-nav="prev">Previous</button>
-     <button type="button" ms-nav="next">Next</button>
-   </div>
-   ```
-
-2. **Unique Elements Within Each Wrapper**:
-
-   - Ensure that all elements with `ms-` attributes (e.g., `[ms-nav="prev"]`, `[ms-step]`, `[ms-progress-wrap]`) are within their respective wrappers.
-   - This ensures that each form instance operates independently.
-
-3. **Include the Script Once**:
-
-   - You only need to include the script once at the end of the body.
-   - The script will automatically initialize all multistep forms on the page.
+<!-- Second Multistep Form -->
+<div ms="wrapper">
+  <form ms-keyboard-nav action="/another-submit" method="POST">
+    <!-- Steps -->
+  </form>
+  <button type="button" ms-nav="prev">Previous</button>
+  <button type="button" ms-nav="next">Next</button>
+</div>
+```
 
 ---
 
-## **Styling**
+## Styling Suggestions
 
-### **Progress Bar Styles**
-
-Customize the progress bar using CSS:
+### Progress Bar
 
 ```css
 [ms-progress-wrap] {
@@ -271,14 +224,12 @@ Customize the progress bar using CSS:
 [ms-progress-bar] {
   width: 0%;
   height: 100%;
-  background-color: #3b82f6; /* Adjust color */
+  background-color: #3b82f6;
   transition: width 0.3s ease;
 }
 ```
 
-### **Navigation Steps (Optional)**
-
-If using navigation steps, style the active and deactivated steps:
+### Navigation Steps
 
 ```css
 .nav-step.is-active {
@@ -293,7 +244,7 @@ If using navigation steps, style the active and deactivated steps:
 
 ---
 
-## **Complete Example**
+## Complete Example
 
 ```html
 <!-- First Multistep Form -->
@@ -305,7 +256,7 @@ If using navigation steps, style the active and deactivated steps:
   <p>Step <span ms-current-step></span> of <span ms-total-steps></span></p>
 
   <!-- Form -->
-  <form ms-keyboard-nav data-next-key="Shift+Enter" data-prev-key="Alt+Enter" action="/submit-form" method="POST">
+  <form ms-keyboard-nav data-change-last-button="true" data-submit-label="Send Now" action="/submit-form" method="POST">
     <!-- Step 1 -->
     <div ms-step ms-step-name="Customer Type">
       <label>
@@ -318,7 +269,7 @@ If using navigation steps, style the active and deactivated steps:
       </label>
     </div>
 
-    <!-- Divider (Will be removed by the script) -->
+    <!-- Divider (template purpose only; will be removed) -->
     <div ms-step-divider>
       <!-- Divider content (e.g., a horizontal line) -->
     </div>
@@ -333,16 +284,14 @@ If using navigation steps, style the active and deactivated steps:
       <!-- Contact fields -->
     </div>
 
-    <!-- Submit Button -->
+    <!-- Submit Button (native submit button, shown only on last step if not using change-last-button) -->
     <button type="submit">Submit</button>
   </form>
 
-  <!-- Navigation Buttons -->
+  <!-- Global Navigation Buttons -->
   <button type="button" ms-nav="prev">Previous</button>
   <button type="button" ms-nav="next">Next</button>
 </div>
-
-<!-- Other content or forms -->
 
 <!-- Second Multistep Form -->
 <div ms="wrapper">
@@ -354,18 +303,18 @@ If using navigation steps, style the active and deactivated steps:
 
   <!-- Form -->
   <form ms-keyboard-nav action="/another-submit" method="POST">
-    <!-- Steps -->
+    <!-- Step A -->
     <div ms-step ms-step-name="Step A">
-      <!-- Step A content -->
+      <!-- Content for Step A -->
     </div>
+    <!-- Step B -->
     <div ms-step ms-step-name="Step B">
-      <!-- Step B content -->
+      <!-- Content for Step B -->
     </div>
-    <!-- Submit Button -->
     <button type="submit">Submit</button>
   </form>
 
-  <!-- Navigation Buttons -->
+  <!-- Global Navigation Buttons -->
   <button type="button" ms-nav="prev">Previous</button>
   <button type="button" ms-nav="next">Next</button>
 </div>
@@ -376,77 +325,96 @@ If using navigation steps, style the active and deactivated steps:
 
 ---
 
-## **Key Points**
+## Key Points
 
-- **Custom Step Definition**: Only elements with `ms-step` are considered steps, providing flexibility in form design.
-- **Multiple Forms Support**: You can have multiple multistep forms on the same page, each operating independently.
-- **Visual Dividers Removal**: Elements with the `ms-step-divider` attribute are automatically removed from the DOM, allowing you to include them in your HTML for template purposes without affecting the live form.
-- **Validation**: The script validates inputs in the current step before allowing navigation.
-- **Conditional Logic**: Steps with `data-condition` attributes are shown or hidden based on user input.
-- **Preventing Premature Submission**: The default Enter key behavior is managed to prevent unintended form submissions.
-- **Custom Keyboard Navigation**: Use customizable key combinations for next and previous step navigation.
-- **Accessibility**: The script includes ARIA roles and manages focus for better accessibility.
-- **No AJAX Submission**: The form submits naturally, ensuring compatibility with platforms like Webflow.
+- **Custom Steps:**  
+  Only elements with `ms-step` are treated as steps. Use `ms-step-name` for custom labels.
 
----
+- **Conditional Logic:**  
+  Use `data-condition` to show/hide steps based on user inputs.
 
-## **Best Practices**
+- **Progress Indicators:**  
+  Progress bar and step counter update automatically.
 
-- **Defining Steps**: Ensure that all your step elements within the form have the `ms-step` attribute.
-- **Using Dividers**: If you include visual dividers with the `ms-step-divider` attribute, be aware that they will be removed from the live form.
-- **Input Names**: Ensure input `name` attributes match those used in `data-condition`.
-- **Required Fields**: Use the `required` attribute for mandatory fields.
-- **Testing**: Test the form thoroughly to ensure all steps and validations work as expected.
-- **Customization**: Feel free to style the form and progress indicators to match your branding.
-- **Accessibility**: Choose keyboard shortcuts that do not interfere with assistive technologies.
-- **Unique Scoping**: Make sure all `ms-` attributes are correctly scoped within each `ms="wrapper"` container to prevent conflicts.
+- **Keyboard Navigation:**  
+  Default key combos are Shift+Enter (next) and Alt+Enter (prev); customizable via data attributes.
 
----
+- **Global Navigation Buttons (Optional):**  
+  These buttons are optional. You can use custom navigation buttons within steps via the provided API.
 
-## **Troubleshooting**
+- **Last-Step Submit Option:**  
+  With `data-change-last-button="true"`, the global next button becomes a submit button on the last step (customizable with `data-submit-label`).
 
-- **Form Not Submitting**: Ensure all required fields are filled and valid. Remember that pressing **Enter** will only submit the form on the last step.
-- **Steps Not Showing/Hiding**: Check `data-condition` syntax and input values.
-- **Keyboard Navigation Not Working**: Ensure `ms-keyboard-nav` is added to the `<form>` and that key combinations are correctly specified.
-- **Progress Bar Not Updating**: Verify that `[ms-progress-wrap]` and `[ms-progress-bar]` are correctly included within the wrapper.
-- **Default Enter Key Behavior**: The script prevents default form submission when **Enter** is pressed. If you need to allow submissions via Enter key in specific cases, adjust the script accordingly.
-- **Autofocus Issues**: The script is designed not to autofocus on page load or when steps change automatically. Autofocus occurs only when the user navigates steps using the navigation buttons or keyboard shortcuts.
-- **Dividers Still Visible**: If elements with `ms-step-divider` are still visible, ensure that the script is correctly included and that there are no JavaScript errors preventing it from running.
-- **Multiple Forms Interference**: If forms are interfering with each other, check that all `ms-` attributes are properly scoped within their respective `ms="wrapper"` containers.
+- **Visual Dividers:**  
+  Elements with `ms-step-divider` are removed automatically.
+
+- **Multiple Forms:**  
+  Each multistep form is scoped inside its own wrapper (`ms="wrapper"`) so multiple forms work independently.
+
+- **Accessibility:**  
+  ARIA roles and focus management are built-in.
+
+- **Natural Form Submission:**  
+  The form submits via its action/method attributes (no AJAX).
 
 ---
 
-## **Performance, Scalability, and Accessibility Considerations**
+## Best Practices
 
-- **Performance**:
-  - The script uses debouncing and efficient event handling to minimize performance impacts.
-  - Only elements within each multistep form are manipulated, preventing unnecessary DOM operations.
-- **Scalability**:
-  - The modular design allows for multiple forms without code duplication or conflicts.
-  - The script automatically initializes all multistep forms on the page.
-- **Accessibility**:
-  - ARIA roles and attributes are used to enhance accessibility.
-  - Focus management ensures users can navigate using keyboard or assistive technologies.
-  - Custom keyboard navigation considers common accessibility practices.
+- **Define Steps Clearly:**  
+  Ensure every step element has `ms-step` and, optionally, `ms-step-name`.
 
----
+- **Use Scoped Wrappers:**  
+  Place each multistep form in its own `ms="wrapper"` to avoid conflicts with other forms.
 
-## **Additional Information**
+- **Customize Keyboard Shortcuts:**  
+  Adjust `data-next-key` and `data-prev-key` as needed.
 
-- **Compatible Platforms**: The script is designed to work with standard HTML forms and platforms like Webflow.
-- **Further Customization**: Advanced users can modify the script or styles to add more features or change behaviors.
-- **Support**: If you encounter issues or have questions, feel free to reach out for assistance.
+- **Test Thoroughly:**  
+  Validate that navigation, validation, progress updates, and conditional logic work as expected.
+
+- **Accessibility:**  
+  Confirm that ARIA attributes are functioning correctly and that keyboard navigation does not conflict with assistive technologies.
 
 ---
 
-## **Conclusion**
+## Troubleshooting
 
-By following this guide, you can implement one or more multistep forms on your page, enhancing user experience through guided navigation, validation, and visual feedback. The script is designed to be flexible, efficient, and accessible, ensuring it meets the needs of various projects.
+- **Form Not Submitting:**  
+  Ensure all required fields are valid; remember that Enter only submits on the last step.
+
+- **Steps Not Displaying Correctly:**  
+  Check that all step elements have `ms-step` and that `data-condition` values are correct.
+
+- **Keyboard Navigation Issues:**  
+  Verify that `ms-keyboard-nav` is set and custom key combinations are correct.
+
+- **Progress Bar Not Updating:**  
+  Ensure progress elements (`ms-progress-wrap`, `ms-progress-bar`, etc.) are within the correct wrapper.
+
+- **Multiple Forms Interference:**  
+  Make sure each form is properly wrapped in its own container with `ms="wrapper"`.
+
+- **Submit Button Placement:**  
+  If using the last-step submit option, confirm that `data-change-last-button` is set on the form and that `data-submit-label` (if desired) is provided.
 
 ---
 
-**Note**: Always ensure that any custom key combinations used do not conflict with browser shortcuts or accessibility features. It's important to test your form with various assistive technologies to ensure it remains accessible to all users.
+## Performance, Scalability & Accessibility
+
+- **Performance:**  
+  The script uses debouncing and is scoped to each form, minimizing DOM operations.
+
+- **Scalability:**  
+  The modular design allows multiple multistep forms on one page without conflict.
+
+- **Accessibility:**  
+  ARIA roles, focus management, and customizable keyboard navigation help ensure the form is accessible.
 
 ---
 
-**Happy coding!**
+## Conclusion
+
+This multistep form solution offers a flexible, scalable way to create engaging forms with step-by-step navigation, conditional logic, and built-in progress indicators. It supports multiple forms on one page, customizable keyboard navigation, and optional transformation of the global next button into a submit button on the last step—all while ensuring accessibility and performance.
+
+Happy coding! If you have any further questions or need assistance, please feel free to ask.
