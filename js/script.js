@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", function () {
       constructor(wrapper) {
         this.wrapper = wrapper;
         this.form = wrapper.querySelector('form');
-        // Global navigation buttons are optional
+        // Global navigation buttons are optional; if not found, they won't be used.
         this.prevButton = wrapper.querySelector('[ms-nav="prev"]');
         this.nextButton = wrapper.querySelector('[ms-nav="next"]');
         this.navContainer = wrapper.querySelector('[ms-nav-steps="container"]');
@@ -34,7 +34,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       initialize() {
-        // Remove elements with 'ms-step-divider' attribute from the live form
+        // Remove elements with 'ms-step-divider' attribute
         const stepDividers = this.form.querySelectorAll('[ms-step-divider]');
         stepDividers.forEach((divider) => divider.remove());
 
@@ -51,7 +51,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       filterSteps() {
-        // Only consider elements with the 'ms-step' attribute within the form
+        // Select only elements with the 'ms-step' attribute within the form
         this.steps = Array.from(this.form.querySelectorAll('[ms-step]'));
         this.filteredSteps = this.getFilteredSteps();
       }
@@ -115,14 +115,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
           const stepClone = this.navStepTemplate.cloneNode(true);
           stepClone.removeAttribute("ms-nav-steps");
-
-          // Use ms-step-name if defined, else use ms-step attribute value, else leave empty
+          // Use ms-step-name if defined; else, use the value of ms-step; else, leave empty
           const stepName = step.getAttribute("ms-step-name") || step.getAttribute("ms-step") || "";
           stepClone.textContent = stepName;
 
           stepClone.classList.toggle("is-active", index === currentStepIndex);
           stepClone.classList.toggle("is-deactive", index > currentStepIndex);
-
           stepClone.setAttribute("aria-selected", index === currentStepIndex);
           stepClone.setAttribute("role", "tab");
           stepClone.setAttribute("tabindex", index === currentStepIndex ? "0" : "-1");
@@ -131,7 +129,7 @@ document.addEventListener("DOMContentLoaded", function () {
             stepClone.addEventListener("click", () => {
               if (index < currentStepIndex) {
                 this.stepHistory.push(this.currentStep);
-                this.showStep(index, false); // No autofocus on click
+                this.showStep(index, false);
               }
             });
           } else {
@@ -152,7 +150,6 @@ document.addEventListener("DOMContentLoaded", function () {
         if (this.nextButton) {
           const isLastStep = (stepIndex === filteredSteps.length - 1);
           if (isLastStep && this.form.hasAttribute('data-change-last-button')) {
-            // Change next button to a submit button on the last step
             this.nextButton.style.display = "inline-block";
             const submitLabel = this.form.getAttribute('data-submit-label') || "Submit";
             this.nextButton.textContent = submitLabel;
@@ -168,7 +165,6 @@ document.addEventListener("DOMContentLoaded", function () {
             this.nextButton.setAttribute("aria-disabled", isLastStep);
           }
         }
-        // Handle native submit buttons (if any)
         const submitButtons = this.form.querySelectorAll('[type="submit"]');
         submitButtons.forEach((submitButton) => {
           submitButton.style.display = ((filteredSteps.length - 1) === stepIndex && !this.form.hasAttribute('data-change-last-button')) ? "inline-block" : "none";
@@ -179,7 +175,6 @@ document.addEventListener("DOMContentLoaded", function () {
         const totalSteps = filteredSteps.length;
         const currentStepNumber = stepIndex + 1;
         const progressPercentage = ((currentStepNumber - 1) / (totalSteps - 1)) * 100;
-
         if (this.progressBar) {
           this.progressBar.style.width = progressPercentage + "%";
         }
@@ -430,12 +425,13 @@ document.addEventListener("DOMContentLoaded", function () {
       }, 100);
     }
 
-    // Initialize all multistep forms on the page
+    // Initialize all multistep forms on the page and store instance on the wrapper
     const wrappers = document.querySelectorAll('[ms="wrapper"]');
     wrappers.forEach((wrapper) => {
-      new MultiStepForm(wrapper);
+      const instance = new MultiStepForm(wrapper);
+      wrapper.multiStepFormInstance = instance;
     });
 
-    console.log("All multistep forms have been initialized successfully. v2.3.3");
+    console.log("All multistep forms have been initialized successfully. v2.3.4");
   })();
 });
