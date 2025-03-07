@@ -4,6 +4,7 @@ document.addEventListener("DOMContentLoaded", function () {
       constructor(wrapper) {
         this.wrapper = wrapper;
         this.form = wrapper.querySelector('form');
+        // Global navigation buttons are optional
         this.prevButton = wrapper.querySelector('[ms-nav="prev"]');
         this.nextButton = wrapper.querySelector('[ms-nav="next"]');
         this.navContainer = wrapper.querySelector('[ms-nav-steps="container"]');
@@ -24,10 +25,8 @@ document.addEventListener("DOMContentLoaded", function () {
         this.steps = [];
         this.filteredSteps = [];
 
-        if (!this.form || !this.prevButton || !this.nextButton) {
-          console.error(
-            "Required elements not found in the multistep form. Please ensure ms='wrapper', ms-nav='prev', ms-nav='next' are correctly set within the multistep form."
-          );
+        if (!this.form) {
+          console.error("Form not found in multistep form wrapper.");
           return;
         }
 
@@ -35,7 +34,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       initialize() {
-        // Remove elements with 'ms-step-divider' attribute
+        // Remove any visual dividers (ms-step-divider) from the live form
         const stepDividers = this.form.querySelectorAll('[ms-step-divider]');
         stepDividers.forEach((divider) => divider.remove());
 
@@ -44,7 +43,7 @@ document.addEventListener("DOMContentLoaded", function () {
         this.setupConditionalListeners();
         this.setupKeyboardNavigation();
         this.form.addEventListener("submit", this.handleFormSubmit.bind(this));
-        this.showStep(0, false); // No autofocus on initial load
+        this.showStep(0, false); // Do not autofocus on initial load
         this.wrapper.style.cssText = "display: block; opacity: 1";
 
         // Initialize progress bar on load
@@ -52,7 +51,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       filterSteps() {
-        // Select only elements with the 'ms-step' attribute within the form
+        // Only consider elements with the 'ms-step' attribute inside the form
         this.steps = Array.from(this.form.querySelectorAll('[ms-step]'));
         this.filteredSteps = this.getFilteredSteps();
       }
@@ -98,7 +97,7 @@ document.addEventListener("DOMContentLoaded", function () {
         this.updateProgressBar(this.filteredSteps, stepIndex);
         this.updateRequiredAttributes(this.filteredSteps);
 
-        this.currentStep = stepIndex; // Update currentStep to the new index
+        this.currentStep = stepIndex;
       }
 
       updateNavSteps(filteredSteps, currentStepIndex) {
@@ -127,7 +126,7 @@ document.addEventListener("DOMContentLoaded", function () {
           stepClone.setAttribute("tabindex", index === currentStepIndex ? "0" : "-1");
 
           if (index <= currentStepIndex) {
-            // Only add click event listener to previous steps
+            // Allow navigation to previous steps
             stepClone.addEventListener("click", () => {
               if (index < currentStepIndex) {
                 this.stepHistory.push(this.currentStep);
@@ -135,7 +134,6 @@ document.addEventListener("DOMContentLoaded", function () {
               }
             });
           } else {
-            // Future steps are not clickable
             stepClone.style.pointerEvents = "none";
           }
 
@@ -146,16 +144,40 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       updateButtons(filteredSteps, stepIndex) {
-        this.prevButton.style.display = stepIndex === 0 ? "none" : "inline-block";
-        const isLastStep = stepIndex === filteredSteps.length - 1;
-        this.nextButton.style.display = isLastStep ? "none" : "inline-block";
-        this.prevButton.setAttribute("aria-disabled", stepIndex === 0);
-        this.nextButton.setAttribute("aria-disabled", isLastStep);
+        if (this.prevButton) {
+          this.prevButton.style.display = stepIndex === 0 ? "none" : "inline-block";
+          this.prevButton.setAttribute("aria-disabled", stepIndex === 0);
+        }
 
-        // Handle submit buttons dynamically
+        if (this.nextButton) {
+          const isLastStep = (stepIndex === filteredSteps.length - 1);
+          if (isLastStep && this.form.hasAttribute('data-change-last-button')) {
+            // Change the next button to a submit button
+            this.nextButton.style.display = "inline-block";
+            const submitLabel = this.form.getAttribute('data-submit-label') || "Submit";
+            this.nextButton.textContent = submitLabel;
+            // Bind a click event to submit the form
+            this.nextButton.onclick = () => { this.form.submit(); };
+          } else {
+            // Normal behavior: show next button if not last step
+            if (this.nextButton) {
+              this.nextButton.style.display = isLastStep ? "none" : "inline-block";
+              if (this.form.hasAttribute('data-change-last-button')) {
+                // Restore default next button behavior if previously changed
+                this.nextButton.textContent = this.nextButton.getAttribute('data-default-label') || "Next";
+                this.nextButton.onclick = this.handleNextClick.bind(this);
+              }
+            }
+          }
+          if (this.nextButton) {
+            this.nextButton.setAttribute("aria-disabled", isLastStep);
+          }
+        }
+
+        // Handle native submit buttons: show them only if not using data-change-last-button
         const submitButtons = this.form.querySelectorAll('[type="submit"]');
         submitButtons.forEach((submitButton) => {
-          submitButton.style.display = isLastStep ? "inline-block" : "none";
+          submitButton.style.display = ((filteredSteps.length - 1) === stepIndex && !this.form.hasAttribute('data-change-last-button')) ? "inline-block" : "none";
         });
       }
 
@@ -179,7 +201,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       validateStep(stepIndex) {
         const step = this.filteredSteps[stepIndex];
-        if (!step) return true; // No step to validate
+        if (!step) return true;
         const inputs = step.querySelectorAll("input, select, textarea");
         for (let input of inputs) {
           if (this.isVisible(input) && !input.checkValidity()) {
@@ -210,38 +232,25 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       evaluateCondition(condition) {
-        // Enhanced condition evaluator
-        // Supports operators: ==, !=, ===, !==, <, <=, >, >=
         const conditionMatch = condition.match(/(\w+)\s*(==|!=|===|!==|<=|>=|<|>)\s*'([^']*)'/);
         if (conditionMatch) {
           const [, inputName, operator, value] = conditionMatch;
           let inputValue = null;
-
-          // Handle radio buttons and checkboxes
           const inputs = this.form.querySelectorAll(`[name="${inputName}"]`);
           if (inputs.length > 1) {
-            // It's a group of radio buttons or checkboxes
             const checkedInput = this.form.querySelector(`[name="${inputName}"]:checked`);
             inputValue = checkedInput ? checkedInput.value : '';
           } else {
             const input = inputs[0];
             if (input) {
-              if (input.type === 'checkbox') {
-                inputValue = input.checked ? input.value || 'on' : '';
-              } else {
-                inputValue = input.value;
-              }
+              inputValue = (input.type === 'checkbox') ? (input.checked ? input.value || 'on' : '') : input.value;
             }
           }
-
           if (inputValue !== null) {
             let compareValue = value;
-
-            // Attempt to parse values as numbers for numeric comparisons
             const numericInputValue = parseFloat(inputValue);
             const numericCompareValue = parseFloat(compareValue);
             const areNumeric = !isNaN(numericInputValue) && !isNaN(numericCompareValue);
-
             switch (operator) {
               case "==":
                 return inputValue == compareValue;
@@ -289,9 +298,9 @@ document.addEventListener("DOMContentLoaded", function () {
       handlePrevClick() {
         if (this.stepHistory.length > 0) {
           const prevStepIndex = this.stepHistory.pop();
-          this.showStep(prevStepIndex, true); // Autofocus on user navigation
+          this.showStep(prevStepIndex, true);
         } else if (this.currentStep > 0) {
-          this.showStep(this.currentStep - 1, true); // Autofocus on user navigation
+          this.showStep(this.currentStep - 1, true);
         }
       }
 
@@ -299,18 +308,26 @@ document.addEventListener("DOMContentLoaded", function () {
         if (this.validateStep(this.currentStep)) {
           if (this.currentStep < this.filteredSteps.length - 1) {
             this.stepHistory.push(this.currentStep);
-            this.showStep(this.currentStep + 1, true); // Autofocus on user navigation
+            this.showStep(this.currentStep + 1, true);
           }
         }
       }
 
       setupNavigationListeners() {
-        this.prevButton.addEventListener("click", this.handlePrevClick.bind(this));
-        this.nextButton.addEventListener("click", this.handleNextClick.bind(this));
+        if (this.prevButton) {
+          this.prevButton.addEventListener("click", this.handlePrevClick.bind(this));
+        }
+        if (this.nextButton) {
+          this.nextButton.addEventListener("click", this.handleNextClick.bind(this));
+          // Store default label if using change-last-button feature
+          if (this.form.hasAttribute('data-change-last-button') && !this.nextButton.getAttribute('data-default-label')) {
+            this.nextButton.setAttribute('data-default-label', this.nextButton.textContent);
+          }
+        }
       }
 
       handleFormSubmit(event) {
-        this.filterSteps(); // Ensure filteredSteps is updated
+        this.filterSteps();
         const hiddenRequiredInputs = this.form.querySelectorAll(
           "input[required], select[required], textarea[required]"
         );
@@ -325,12 +342,11 @@ document.addEventListener("DOMContentLoaded", function () {
           event.preventDefault();
           for (let i = 0; i < this.filteredSteps.length; i++) {
             if (!this.validateStep(i)) {
-              this.showStep(i, true); // Autofocus to show validation message
-              this.validateStep(i); // Show validation messages
+              this.showStep(i, true);
+              this.validateStep(i);
               break;
             }
           }
-
           hiddenRequiredInputs.forEach((input) => {
             if (input.dataset.originalRequired) {
               input.setAttribute("required", "true");
@@ -338,12 +354,12 @@ document.addEventListener("DOMContentLoaded", function () {
             }
           });
         } else {
-          // Hide navigation elements upon submission
-          this.prevButton.style.display = 'none';
-          this.nextButton.style.display = 'none';
+          // Hide global navigation elements on submission
+          if (this.prevButton) this.prevButton.style.display = 'none';
+          if (this.nextButton) this.nextButton.style.display = 'none';
           if (this.navContainer) this.navContainer.style.display = 'none';
           if (this.progressWrap) this.progressWrap.style.display = 'none';
-          // Allow form submission to proceed
+          // Allow natural form submission
         }
       }
 
@@ -372,9 +388,8 @@ document.addEventListener("DOMContentLoaded", function () {
       handleKeyDown(event) {
         if (!this.keyboardNavEnabled) return;
 
-        if (event.target.tagName === "TEXTAREA") return; // Allow default behavior in textareas
+        if (event.target.tagName === "TEXTAREA") return;
 
-        // Prevent default Enter key behavior to control navigation
         if (event.key === 'Enter') {
           event.preventDefault();
         }
@@ -386,7 +401,6 @@ document.addEventListener("DOMContentLoaded", function () {
           event.preventDefault();
           this.handlePrevClick();
         } else if (event.key === 'Enter') {
-          // Only allow form submission on the last step
           if (this.currentStep === this.filteredSteps.length - 1 && this.validateStep(this.currentStep)) {
             this.form.submit();
           }
@@ -397,13 +411,6 @@ document.addEventListener("DOMContentLoaded", function () {
         if (this.keyboardNavEnabled) {
           this.form.addEventListener("keydown", this.handleKeyDown.bind(this));
         }
-      }
-
-      setupConditionalListeners() {
-        const allInputs = this.form.querySelectorAll("input, select, textarea");
-        allInputs.forEach((input) => {
-          input.addEventListener("change", this.debouncedFilterSteps.bind(this));
-        });
       }
 
       debounce(func, wait) {
@@ -420,7 +427,7 @@ document.addEventListener("DOMContentLoaded", function () {
           if (this.currentStep >= this.filteredSteps.length) {
             this.currentStep = this.filteredSteps.length - 1;
           }
-          this.showStep(this.currentStep, false); // No autofocus when steps change automatically
+          this.showStep(this.currentStep, false);
         } else {
           this.updateNavSteps(this.filteredSteps, this.currentStep);
           this.updateButtons(this.filteredSteps, this.currentStep);
@@ -436,6 +443,6 @@ document.addEventListener("DOMContentLoaded", function () {
       new MultiStepForm(wrapper);
     });
 
-    console.log("All multistep forms have been initialized successfully. v2.3.0");
+    console.log("All multistep forms have been initialized successfully. v2.3.1");
   })();
 });
