@@ -33,7 +33,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       initialize() {
-        // Remove elements with 'ms-step-divider' attribute
+        // Remove elements with 'ms-step-divider'
         const stepDividers = this.form.querySelectorAll('[ms-step-divider]');
         stepDividers.forEach((divider) => divider.remove());
 
@@ -42,30 +42,26 @@ document.addEventListener("DOMContentLoaded", function () {
         this.setupConditionalListeners();
         this.setupKeyboardNavigation();
         this.form.addEventListener("submit", this.handleFormSubmit.bind(this));
-        this.showStep(0, false); // No autofocus on initial load
+        this.showStep(0, false); // No autofocus on load
         this.wrapper.style.cssText = "display: block; opacity: 1";
 
-        // Initialize progress bar on load
+        // Initialize progress bar
         this.updateProgressBar(this.filteredSteps, this.currentStep);
       }
 
-      // Gather all elements with [ms-step], building the main steps array
       filterSteps() {
-        // Only consider elements with the 'ms-step' attribute within the form
+        // Only elements with 'ms-step'
         this.steps = Array.from(this.form.querySelectorAll('[ms-step]'));
         this.filteredSteps = this.getFilteredSteps();
       }
 
-      // Utility to check if an element is currently visible
       isVisible(element) {
         return !!(element.offsetWidth || element.offsetHeight || element.getClientRects().length);
       }
 
-      // Show a specific step
       showStep(stepIndex, shouldFocus = false) {
-        this.filterSteps(); // Update the list of valid steps
+        this.filterSteps();
 
-        // Hide all steps
         this.steps.forEach((step) => {
           step.style.display = "none";
           step.style.opacity = 0;
@@ -74,7 +70,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
 
         if (this.filteredSteps.length === 0) {
-          console.error("No steps are available to display.");
+          console.error("No steps available.");
           return;
         }
 
@@ -87,7 +83,6 @@ document.addEventListener("DOMContentLoaded", function () {
         const currentStepElement = this.filteredSteps[stepIndex];
         currentStepElement.style.display = "block";
         currentStepElement.setAttribute("aria-hidden", "false");
-
         setTimeout(() => {
           currentStepElement.style.opacity = 1;
           if (shouldFocus) {
@@ -101,16 +96,14 @@ document.addEventListener("DOMContentLoaded", function () {
         this.updateProgressBar(this.filteredSteps, stepIndex);
         this.updateRequiredAttributes(this.filteredSteps);
 
-        this.currentStep = stepIndex; // Track the new current step
+        this.currentStep = stepIndex;
       }
 
-      // Populate the step navigation container
       updateNavSteps(filteredSteps, currentStepIndex) {
         if (!this.navContainer || !this.navStepTemplate) return;
-
         this.navContainer.innerHTML = "";
-        const fragment = document.createDocumentFragment();
 
+        const fragment = document.createDocumentFragment();
         filteredSteps.forEach((step, index) => {
           if (index > 0 && this.navSeparatorTemplate) {
             const separatorClone = this.navSeparatorTemplate.cloneNode(true);
@@ -118,16 +111,14 @@ document.addEventListener("DOMContentLoaded", function () {
             fragment.appendChild(separatorClone);
           }
 
-          // Merge ms-step and ms-step-name logic:
-          // if ms-step has a value => that's the step's name; if empty => no name
-          const stepName = step.getAttribute("ms-step") || "";
           const stepClone = this.navStepTemplate.cloneNode(true);
           stepClone.removeAttribute("ms-nav-steps");
-          stepClone.textContent = stepName; // empty string => no name shown
+          // Merged ms-step and ms-step-name => use the value of ms-step as the name
+          const stepName = step.getAttribute('ms-step') || "";
+          stepClone.textContent = stepName;
 
           stepClone.classList.toggle("is-active", index === currentStepIndex);
           stepClone.classList.toggle("is-deactive", index > currentStepIndex);
-
           stepClone.setAttribute("aria-selected", index === currentStepIndex);
           stepClone.setAttribute("role", "tab");
           stepClone.setAttribute("tabindex", index === currentStepIndex ? "0" : "-1");
@@ -136,7 +127,7 @@ document.addEventListener("DOMContentLoaded", function () {
             stepClone.addEventListener("click", () => {
               if (index < currentStepIndex) {
                 this.stepHistory.push(this.currentStep);
-                this.showStep(index, false); // No autofocus on click
+                this.showStep(index, false);
               }
             });
           } else {
@@ -144,36 +135,28 @@ document.addEventListener("DOMContentLoaded", function () {
           }
           fragment.appendChild(stepClone);
         });
-
         this.navContainer.appendChild(fragment);
       }
 
-      // Manage next/prev buttons (including last-step logic)
       updateButtons(filteredSteps, stepIndex) {
-        // If there's a global prev button
+        // Handle global prev button
         if (this.prevButton) {
           this.prevButton.style.display = stepIndex === 0 ? "none" : "inline-block";
           this.prevButton.setAttribute("aria-disabled", stepIndex === 0);
         }
 
-        // If there's a global next button
+        // Handle global next button
         if (this.nextButton) {
           const isLastStep = (stepIndex === filteredSteps.length - 1);
-
-          // If the form has data-change-last-button => transform next button into submit on last step
           if (isLastStep && this.form.hasAttribute('data-change-last-button')) {
             this.nextButton.style.display = "inline-block";
             const submitLabel = this.form.getAttribute('data-submit-label') || "Submit";
             this.nextButton.textContent = submitLabel;
-            // Convert next button to submit action
-            this.nextButton.onclick = () => {
-              this.form.submit();
-            };
+            this.nextButton.onclick = () => { this.form.submit(); };
           } else {
-            // normal next button behavior
             this.nextButton.style.display = isLastStep ? "none" : "inline-block";
-            // restore default label if previously changed
             if (this.form.hasAttribute('data-change-last-button')) {
+              // Restore
               this.nextButton.textContent = this.nextButton.getAttribute('data-default-label') || "Next";
               this.nextButton.onclick = this.handleNextClick.bind(this);
             }
@@ -183,18 +166,18 @@ document.addEventListener("DOMContentLoaded", function () {
           }
         }
 
-        // Handle the form's native submit buttons
+        // Native submit buttons => only visible on last step if not using data-change-last-button
         const submitButtons = this.form.querySelectorAll('[type="submit"]');
         submitButtons.forEach((submitButton) => {
-          // If not using data-change-last-button, display the native submit button on last step
           const isLastStep = (filteredSteps.length - 1) === stepIndex;
-          submitButton.style.display = (isLastStep && !this.form.hasAttribute('data-change-last-button'))
-            ? "inline-block"
-            : "none";
+          if (!this.form.hasAttribute('data-change-last-button') && isLastStep) {
+            submitButton.style.display = "inline-block";
+          } else {
+            submitButton.style.display = "none";
+          }
         });
       }
 
-      // Update progress bar or step count
       updateProgressBar(filteredSteps, stepIndex) {
         const totalSteps = filteredSteps.length;
         const currentStepNumber = stepIndex + 1;
@@ -211,7 +194,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
       }
 
-      // Validate the inputs in a single step
       validateStep(stepIndex) {
         const step = this.filteredSteps[stepIndex];
         if (!step) return true;
@@ -225,7 +207,6 @@ document.addEventListener("DOMContentLoaded", function () {
         return true;
       }
 
-      // Validate all currently visible steps
       validateAllVisibleSteps() {
         for (let i = 0; i < this.filteredSteps.length; i++) {
           if (!this.validateStep(i)) {
@@ -235,7 +216,6 @@ document.addEventListener("DOMContentLoaded", function () {
         return true;
       }
 
-      // Filter out steps hidden by data-condition
       getFilteredSteps() {
         return this.steps.filter((step) => {
           const condition = step.getAttribute("data-condition");
@@ -246,9 +226,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
       }
 
-      // Evaluate the condition for step visibility
       evaluateCondition(condition) {
-        // e.g. data-condition="someField == 'someValue'"
         const conditionMatch = condition.match(/(\w+)\s*(==|!=|===|!==|<=|>=|<|>)\s*'([^']*)'/);
         if (conditionMatch) {
           const [, inputName, operator, value] = conditionMatch;
@@ -260,11 +238,7 @@ document.addEventListener("DOMContentLoaded", function () {
           } else {
             const input = inputs[0];
             if (input) {
-              if (input.type === 'checkbox') {
-                inputValue = input.checked ? input.value || 'on' : '';
-              } else {
-                inputValue = input.value;
-              }
+              inputValue = (input.type === 'checkbox') ? (input.checked ? input.value || 'on' : '') : input.value;
             }
           }
           if (inputValue !== null) {
@@ -272,33 +246,22 @@ document.addEventListener("DOMContentLoaded", function () {
             const numericInputValue = parseFloat(inputValue);
             const numericCompareValue = parseFloat(compareValue);
             const areNumeric = !isNaN(numericInputValue) && !isNaN(numericCompareValue);
-
             switch (operator) {
-              case "==":
-                return inputValue == compareValue;
-              case "!=":
-                return inputValue != compareValue;
-              case "===":
-                return inputValue === compareValue;
-              case "!==":
-                return inputValue !== compareValue;
-              case "<":
-                return areNumeric ? numericInputValue < numericCompareValue : false;
-              case "<=":
-                return areNumeric ? numericInputValue <= numericCompareValue : false;
-              case ">":
-                return areNumeric ? numericInputValue > numericCompareValue : false;
-              case ">=":
-                return areNumeric ? numericInputValue >= numericCompareValue : false;
-              default:
-                return false;
+              case "==": return inputValue == compareValue;
+              case "!=": return inputValue != compareValue;
+              case "===": return inputValue === compareValue;
+              case "!==": return inputValue !== compareValue;
+              case "<": return areNumeric ? numericInputValue < numericCompareValue : false;
+              case "<=": return areNumeric ? numericInputValue <= numericCompareValue : false;
+              case ">": return areNumeric ? numericInputValue > numericCompareValue : false;
+              case ">=": return areNumeric ? numericInputValue >= numericCompareValue : false;
+              default: return false;
             }
           }
         }
         return false;
       }
 
-      // Manage required attributes for only visible steps
       updateRequiredAttributes(filteredSteps) {
         this.steps.forEach((step) => {
           const inputs = step.querySelectorAll("input, select, textarea");
@@ -318,7 +281,6 @@ document.addEventListener("DOMContentLoaded", function () {
         });
       }
 
-      // Handler for clicking the global prev button
       handlePrevClick() {
         if (this.stepHistory.length > 0) {
           const prevStepIndex = this.stepHistory.pop();
@@ -328,7 +290,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
       }
 
-      // Handler for clicking the global next button
       handleNextClick() {
         if (this.validateStep(this.currentStep)) {
           if (this.currentStep < this.filteredSteps.length - 1) {
@@ -338,21 +299,18 @@ document.addEventListener("DOMContentLoaded", function () {
         }
       }
 
-      // Attach event listeners to global prev/next buttons if present
       setupNavigationListeners() {
         if (this.prevButton) {
           this.prevButton.addEventListener("click", this.handlePrevClick.bind(this));
         }
         if (this.nextButton) {
           this.nextButton.addEventListener("click", this.handleNextClick.bind(this));
-          // Remember the default label if we plan to change it on last step
           if (this.form.hasAttribute('data-change-last-button') && !this.nextButton.getAttribute('data-default-label')) {
             this.nextButton.setAttribute('data-default-label', this.nextButton.textContent);
           }
         }
       }
 
-      // Submit handler for the form
       handleFormSubmit(event) {
         this.filterSteps();
         const hiddenRequiredInputs = this.form.querySelectorAll("input[required], select[required], textarea[required]");
@@ -379,16 +337,13 @@ document.addEventListener("DOMContentLoaded", function () {
             }
           });
         } else {
-          // Hide global navigation elements upon successful validation
           if (this.prevButton) this.prevButton.style.display = 'none';
           if (this.nextButton) this.nextButton.style.display = 'none';
           if (this.navContainer) this.navContainer.style.display = 'none';
           if (this.progressWrap) this.progressWrap.style.display = 'none';
-          // Let the form submit
         }
       }
 
-      // Helpers for custom keyboard combos
       parseKeyCombo(combo) {
         const keys = combo.toLowerCase().split('+');
         return {
@@ -411,10 +366,10 @@ document.addEventListener("DOMContentLoaded", function () {
         );
       }
 
-      // KeyDown handler for the form
       handleKeyDown(event) {
         if (!this.keyboardNavEnabled) return;
-        if (event.target.tagName === "TEXTAREA") return; // allow normal Enter in a textarea
+        if (event.target.tagName === "TEXTAREA") return;
+
         if (event.key === 'Enter') {
           event.preventDefault();
         }
@@ -425,21 +380,18 @@ document.addEventListener("DOMContentLoaded", function () {
           event.preventDefault();
           this.handlePrevClick();
         } else if (event.key === 'Enter') {
-          // Only allow natural submission on the last step if valid
           if (this.currentStep === this.filteredSteps.length - 1 && this.validateStep(this.currentStep)) {
             this.form.submit();
           }
         }
       }
 
-      // Attach the keyboard event only if ms-keyboard-nav
       setupKeyboardNavigation() {
         if (this.keyboardNavEnabled) {
           this.form.addEventListener("keydown", this.handleKeyDown.bind(this));
         }
       }
 
-      // Listen for changes in any input to refilter steps
       setupConditionalListeners() {
         const allInputs = this.form.querySelectorAll("input, select, textarea");
         allInputs.forEach((input) => {
@@ -447,7 +399,6 @@ document.addEventListener("DOMContentLoaded", function () {
         });
       }
 
-      // Simple debounce to handle re-filtering
       debounce(func, wait) {
         let timeout;
         return function (...args) {
@@ -458,7 +409,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
       debouncedFilterSteps = this.debounce(() => {
         this.filterSteps();
-        // If the current step is no longer included in filteredSteps, adjust
         if (!this.filteredSteps.includes(this.steps[this.currentStep])) {
           if (this.currentStep >= this.filteredSteps.length) {
             this.currentStep = this.filteredSteps.length - 1;
@@ -476,9 +426,10 @@ document.addEventListener("DOMContentLoaded", function () {
     // Initialize all multistep forms on the page
     const wrappers = document.querySelectorAll('[ms="wrapper"]');
     wrappers.forEach((wrapper) => {
-      new MultiStepForm(wrapper);
+      // Store the instance on the wrapper
+      wrapper.multiStepInstance = new MultiStepForm(wrapper);
     });
 
-    console.log("All multistep forms have been initialized successfully. v2.3.5");
+    console.log("All multistep forms have been initialized successfully. v2.3.6");
   })();
 });
