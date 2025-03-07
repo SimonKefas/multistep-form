@@ -4,7 +4,6 @@ document.addEventListener("DOMContentLoaded", function () {
       constructor(wrapper) {
         this.wrapper = wrapper;
         this.form = wrapper.querySelector('form');
-        // Global navigation buttons are optional
         this.prevButton = wrapper.querySelector('[ms-nav="prev"]');
         this.nextButton = wrapper.querySelector('[ms-nav="next"]');
         this.navContainer = wrapper.querySelector('[ms-nav-steps="container"]');
@@ -34,7 +33,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       initialize() {
-        // Remove any visual dividers (ms-step-divider) from the live form
+        // Remove elements with 'ms-step-divider' attribute
         const stepDividers = this.form.querySelectorAll('[ms-step-divider]');
         stepDividers.forEach((divider) => divider.remove());
 
@@ -43,7 +42,7 @@ document.addEventListener("DOMContentLoaded", function () {
         this.setupConditionalListeners();
         this.setupKeyboardNavigation();
         this.form.addEventListener("submit", this.handleFormSubmit.bind(this));
-        this.showStep(0, false); // Do not autofocus on initial load
+        this.showStep(0, false); // No autofocus on initial load
         this.wrapper.style.cssText = "display: block; opacity: 1";
 
         // Initialize progress bar on load
@@ -51,7 +50,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       filterSteps() {
-        // Only consider elements with the 'ms-step' attribute inside the form
+        // Select only elements with the 'ms-step' attribute within the form
         this.steps = Array.from(this.form.querySelectorAll('[ms-step]'));
         this.filteredSteps = this.getFilteredSteps();
       }
@@ -97,14 +96,13 @@ document.addEventListener("DOMContentLoaded", function () {
         this.updateProgressBar(this.filteredSteps, stepIndex);
         this.updateRequiredAttributes(this.filteredSteps);
 
-        this.currentStep = stepIndex;
+        this.currentStep = stepIndex; // Update currentStep to the new index
       }
 
       updateNavSteps(filteredSteps, currentStepIndex) {
         if (!this.navContainer || !this.navStepTemplate) return;
 
         this.navContainer.innerHTML = "";
-
         const fragment = document.createDocumentFragment();
 
         filteredSteps.forEach((step, index) => {
@@ -120,13 +118,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
           stepClone.classList.toggle("is-active", index === currentStepIndex);
           stepClone.classList.toggle("is-deactive", index > currentStepIndex);
-
           stepClone.setAttribute("aria-selected", index === currentStepIndex);
           stepClone.setAttribute("role", "tab");
           stepClone.setAttribute("tabindex", index === currentStepIndex ? "0" : "-1");
 
           if (index <= currentStepIndex) {
-            // Allow navigation to previous steps
             stepClone.addEventListener("click", () => {
               if (index < currentStepIndex) {
                 this.stepHistory.push(this.currentStep);
@@ -148,33 +144,24 @@ document.addEventListener("DOMContentLoaded", function () {
           this.prevButton.style.display = stepIndex === 0 ? "none" : "inline-block";
           this.prevButton.setAttribute("aria-disabled", stepIndex === 0);
         }
-
         if (this.nextButton) {
           const isLastStep = (stepIndex === filteredSteps.length - 1);
           if (isLastStep && this.form.hasAttribute('data-change-last-button')) {
-            // Change the next button to a submit button
             this.nextButton.style.display = "inline-block";
             const submitLabel = this.form.getAttribute('data-submit-label') || "Submit";
             this.nextButton.textContent = submitLabel;
-            // Bind a click event to submit the form
             this.nextButton.onclick = () => { this.form.submit(); };
           } else {
-            // Normal behavior: show next button if not last step
-            if (this.nextButton) {
-              this.nextButton.style.display = isLastStep ? "none" : "inline-block";
-              if (this.form.hasAttribute('data-change-last-button')) {
-                // Restore default next button behavior if previously changed
-                this.nextButton.textContent = this.nextButton.getAttribute('data-default-label') || "Next";
-                this.nextButton.onclick = this.handleNextClick.bind(this);
-              }
+            this.nextButton.style.display = isLastStep ? "none" : "inline-block";
+            if (this.form.hasAttribute('data-change-last-button')) {
+              this.nextButton.textContent = this.nextButton.getAttribute('data-default-label') || "Next";
+              this.nextButton.onclick = this.handleNextClick.bind(this);
             }
           }
           if (this.nextButton) {
             this.nextButton.setAttribute("aria-disabled", isLastStep);
           }
         }
-
-        // Handle native submit buttons: show them only if not using data-change-last-button
         const submitButtons = this.form.querySelectorAll('[type="submit"]');
         submitButtons.forEach((submitButton) => {
           submitButton.style.display = ((filteredSteps.length - 1) === stepIndex && !this.form.hasAttribute('data-change-last-button')) ? "inline-block" : "none";
@@ -185,15 +172,12 @@ document.addEventListener("DOMContentLoaded", function () {
         const totalSteps = filteredSteps.length;
         const currentStepNumber = stepIndex + 1;
         const progressPercentage = ((currentStepNumber - 1) / (totalSteps - 1)) * 100;
-
         if (this.progressBar) {
           this.progressBar.style.width = progressPercentage + "%";
         }
-
         if (this.currentStepElement) {
           this.currentStepElement.textContent = currentStepNumber;
         }
-
         if (this.totalStepsElement) {
           this.totalStepsElement.textContent = totalSteps;
         }
@@ -319,7 +303,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         if (this.nextButton) {
           this.nextButton.addEventListener("click", this.handleNextClick.bind(this));
-          // Store default label if using change-last-button feature
           if (this.form.hasAttribute('data-change-last-button') && !this.nextButton.getAttribute('data-default-label')) {
             this.nextButton.setAttribute('data-default-label', this.nextButton.textContent);
           }
@@ -354,12 +337,10 @@ document.addEventListener("DOMContentLoaded", function () {
             }
           });
         } else {
-          // Hide global navigation elements on submission
           if (this.prevButton) this.prevButton.style.display = 'none';
           if (this.nextButton) this.nextButton.style.display = 'none';
           if (this.navContainer) this.navContainer.style.display = 'none';
           if (this.progressWrap) this.progressWrap.style.display = 'none';
-          // Allow natural form submission
         }
       }
 
@@ -387,13 +368,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
       handleKeyDown(event) {
         if (!this.keyboardNavEnabled) return;
-
         if (event.target.tagName === "TEXTAREA") return;
-
         if (event.key === 'Enter') {
           event.preventDefault();
         }
-
         if (this.matchKeyEvent(event, this.nextKeyCombo)) {
           event.preventDefault();
           this.handleNextClick();
@@ -411,6 +389,13 @@ document.addEventListener("DOMContentLoaded", function () {
         if (this.keyboardNavEnabled) {
           this.form.addEventListener("keydown", this.handleKeyDown.bind(this));
         }
+      }
+
+      setupConditionalListeners() {
+        const allInputs = this.form.querySelectorAll("input, select, textarea");
+        allInputs.forEach((input) => {
+          input.addEventListener("change", this.debouncedFilterSteps.bind(this));
+        });
       }
 
       debounce(func, wait) {
@@ -443,6 +428,6 @@ document.addEventListener("DOMContentLoaded", function () {
       new MultiStepForm(wrapper);
     });
 
-    console.log("All multistep forms have been initialized successfully. v2.3.1");
+    console.log("All multistep forms have been initialized successfully. v2.3.2");
   })();
 });
